@@ -1,0 +1,9 @@
+topic_id,chapter_id,relevance
+T001,TB01-C02,primary
+T002,TB01-C03,primary
+T002,TB02-C01,secondary
+T003,TB01-C01,primary
+T004,TB02-C02,primary
+T005,TB02-C01,primary
+T006,TB01-C03,secondary
+T007,TB01-C01,secondary

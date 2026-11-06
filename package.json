@@ -1,0 +1,28 @@
+{
+  "name": "pete-curriculum-mapper",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Curriculum mapping tool for physical education teacher education (PETE) programs",
+  "author": "Yongjin Lee (https://yongjin.info)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "dataset": "node scripts/build-dataset.mjs",
+    "dataset:template": "python3 scripts/make-template-xlsx.py"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/utilities": "3.2.2",
+    "next": "16.4.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,41 @@
+# PETE Curriculum Mapper
+
+A free web tool that helps physical education teacher education (PETE) faculty map key topics, textbook chapters and SHAPE America 2017 Initial PETE Standards onto the courses of their program, for internal program review.
+
+Created by [Yongjin Lee](https://yongjin.info).
+
+## Status
+| Phase | | Status |
+|---|---|---|
+| 1 | Master data set template + checker | Done |
+| 2 | Prototype: courses, drag-and-drop topics, I/R/M levels, custom topics and books, coverage view, browser autosave, JSON open/download | **Done** |
+| 3 | Google sign-in, save/open in Google Drive, sharing | Next |
+| 4 | PDF and Word export (Summary / Standard / Full) | |
+| 5 | AI: plan-of-study upload, map analysis | |
+| 6 | Launch: domain, privacy/terms, OAuth verification, analytics | |
+
+See [PLAN.md](PLAN.md) for the full specification.
+
+## Run locally
+Requires Node.js 20 or newer.
+```bash
+npm install
+npm run dev
+```
+Then open http://localhost:3000.
+
+## Update the topic data set
+1. Fill in `dataset/PETE_dataset_template.xlsx` (see [dataset/README.md](dataset/README.md)).
+2. Save each tab as CSV into `dataset/csv/`.
+3. Run `npm run dataset`. It checks the data and writes `public/data/dataset.json`.
+4. Commit and push; the site rebuilds with the new data.
+
+## Project layout
+```
+app/                 Next.js pages and global styles
+components/          Mapper (main screen), CourseList, TopicPanel, Coverage, dialogs
+lib/                 Types, plan state and storage, data set helpers
+dataset/             Data set template, CSV source files, guide
+public/data/         Generated dataset.json loaded by the site
+scripts/             Data set checker/converter and template builder
+```

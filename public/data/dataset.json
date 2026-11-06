@@ -1,0 +1,233 @@
+{
+  "datasetVersion": "2026-11-06",
+  "textbooks": [
+    {
+      "textbook_id": "TB01",
+      "title": "SAMPLE Textbook A (replace)",
+      "authors": "Author, A.; Author, B.",
+      "edition": 1,
+      "year": 2020,
+      "publisher": "Publisher",
+      "isbn": ""
+    },
+    {
+      "textbook_id": "TB02",
+      "title": "SAMPLE Textbook B (replace)",
+      "authors": "Author, C.",
+      "edition": 2,
+      "year": 2022,
+      "publisher": "Publisher",
+      "isbn": ""
+    }
+  ],
+  "chapters": [
+    {
+      "chapter_id": "TB01-C01",
+      "textbook_id": "TB01",
+      "chapter_no": 1,
+      "chapter_title": "SAMPLE chapter title (replace)"
+    },
+    {
+      "chapter_id": "TB01-C02",
+      "textbook_id": "TB01",
+      "chapter_no": 2,
+      "chapter_title": "SAMPLE chapter title (replace)"
+    },
+    {
+      "chapter_id": "TB01-C03",
+      "textbook_id": "TB01",
+      "chapter_no": 3,
+      "chapter_title": "SAMPLE chapter title (replace)"
+    },
+    {
+      "chapter_id": "TB02-C01",
+      "textbook_id": "TB02",
+      "chapter_no": 1,
+      "chapter_title": "SAMPLE chapter title (replace)"
+    },
+    {
+      "chapter_id": "TB02-C02",
+      "textbook_id": "TB02",
+      "chapter_no": 2,
+      "chapter_title": "SAMPLE chapter title (replace)"
+    }
+  ],
+  "standards": [
+    {
+      "standard_id": "S1",
+      "standard_no": "1",
+      "component": "",
+      "short_label": "Content and foundational knowledge"
+    },
+    {
+      "standard_id": "S2",
+      "standard_no": "2",
+      "component": "",
+      "short_label": "Skillfulness and health-related fitness"
+    },
+    {
+      "standard_id": "S3",
+      "standard_no": "3",
+      "component": "",
+      "short_label": "Planning and implementation"
+    },
+    {
+      "standard_id": "S4",
+      "standard_no": "4",
+      "component": "",
+      "short_label": "Instructional delivery and management"
+    },
+    {
+      "standard_id": "S5",
+      "standard_no": "5",
+      "component": "",
+      "short_label": "Assessment of student learning"
+    },
+    {
+      "standard_id": "S6",
+      "standard_no": "6",
+      "component": "",
+      "short_label": "Professional responsibility"
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "T001",
+      "topic_name": "Class management and routines",
+      "description": "Establishing protocols, transitions, and signals for an efficient learning environment",
+      "keywords": [
+        "protocols",
+        "transitions",
+        "signals"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB01-C02",
+          "relevance": "primary"
+        }
+      ],
+      "standards": [
+        "S4"
+      ]
+    },
+    {
+      "topic_id": "T002",
+      "topic_name": "Motor skill development",
+      "description": "Stages and progressions of fundamental movement skill acquisition",
+      "keywords": [
+        "locomotor",
+        "manipulative",
+        "progressions"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB01-C03",
+          "relevance": "primary"
+        },
+        {
+          "chapter_id": "TB02-C01",
+          "relevance": "secondary"
+        }
+      ],
+      "standards": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "topic_id": "T003",
+      "topic_name": "Lesson planning",
+      "description": "Writing objectives, sequencing tasks, and aligning activities to outcomes",
+      "keywords": [
+        "objectives",
+        "task progression"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB01-C01",
+          "relevance": "primary"
+        }
+      ],
+      "standards": [
+        "S3"
+      ]
+    },
+    {
+      "topic_id": "T004",
+      "topic_name": "Assessment of student learning",
+      "description": "Formative and summative assessment in physical education",
+      "keywords": [
+        "rubrics",
+        "formative",
+        "summative"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB02-C02",
+          "relevance": "primary"
+        }
+      ],
+      "standards": [
+        "S5"
+      ]
+    },
+    {
+      "topic_id": "T005",
+      "topic_name": "Health-related fitness",
+      "description": "Components of fitness and fitness education",
+      "keywords": [
+        "cardiorespiratory",
+        "flexibility",
+        "strength"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB02-C01",
+          "relevance": "primary"
+        }
+      ],
+      "standards": [
+        "S2"
+      ]
+    },
+    {
+      "topic_id": "T006",
+      "topic_name": "Inclusion and adapted physical education",
+      "description": "Modifying instruction for learners with diverse needs",
+      "keywords": [
+        "adaptation",
+        "differentiation",
+        "IEP"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB01-C03",
+          "relevance": "secondary"
+        }
+      ],
+      "standards": [
+        "S3",
+        "S4"
+      ]
+    },
+    {
+      "topic_id": "T007",
+      "topic_name": "Professional ethics and advocacy",
+      "description": "Ethical conduct, reflection, and advocating for quality PE",
+      "keywords": [
+        "reflection",
+        "advocacy",
+        "ethics"
+      ],
+      "chapters": [
+        {
+          "chapter_id": "TB01-C01",
+          "relevance": "secondary"
+        }
+      ],
+      "standards": [
+        "S6"
+      ]
+    }
+  ]
+}
