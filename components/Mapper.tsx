@@ -16,6 +16,7 @@ import { buildLibrary } from "@/lib/dataset";
 import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan } from "@/lib/plan";
 import { CourseList } from "./CourseList";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
+import { ExportDialog } from "./ExportDialog";
 import { useDrive } from "./useDrive";
 import { Coverage } from "./Coverage";
 import { TopicPanel } from "./TopicPanel";
@@ -30,6 +31,7 @@ export function Mapper() {
   const [dragName, setDragName] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const lib = useMemo(() => buildLibrary(plan), [plan]);
@@ -76,17 +78,6 @@ export function Mapper() {
     }
   };
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const base = (plan.program.name || plan.program.university || "curriculum-map").replace(/[^\w\- ]+/g, "").trim() || "curriculum-map";
-    a.href = url;
-    a.download = `${base}.petemap.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const importJson = async (file: File) => {
     try {
       const next = normalizePlan(JSON.parse(await file.text()));
@@ -102,7 +93,7 @@ export function Mapper() {
   const newPlan = () => {
     const msg = drive.link
       ? "Start a new, empty map? Your current map stays saved in Google Drive."
-      : "Start a new, empty map? Download your current map as JSON first if you want to keep it.";
+      : "Start a new, empty map? Use Export → JSON first if you want to keep it.";
     if (confirm(msg)) {
       drive.detach();
       dispatch({ type: "replacePlan", plan: emptyPlan() });
@@ -133,15 +124,15 @@ export function Mapper() {
             </span>
           )}
           {!saveOk && drive.status === "signed-out" && (
-            <button className="btn" onClick={drive.signIn}>
+            <button className="btn" onClick={() => drive.signIn()}>
               Sign in
             </button>
           )}
           <button className="btn" onClick={() => fileInput.current?.click()}>
             Open JSON
           </button>
-          <button className="btn" onClick={exportJson}>
-            Download JSON
+          <button className="btn btn-primary" onClick={() => setExportOpen(true)}>
+            Export
           </button>
           <button className="btn" onClick={newPlan}>
             New map
@@ -202,6 +193,7 @@ export function Mapper() {
       </footer>
 
       {drive.mapsOpen && <MyMapsDialog drive={drive} plan={plan} onNewMap={newPlan} />}
+      {exportOpen && <ExportDialog plan={plan} drive={drive} onClose={() => setExportOpen(false)} />}
       {shareOpen && drive.link && <ShareDialog drive={drive} onClose={() => setShareOpen(false)} />}
       {drive.conflict && <ConflictDialog drive={drive} />}
 

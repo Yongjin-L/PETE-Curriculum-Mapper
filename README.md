@@ -2,7 +2,7 @@
 
 A free web tool that helps physical education teacher education (PETE) faculty map key topics, textbook chapters and SHAPE America 2017 Initial PETE Standards onto the courses of their program, for internal program review.
 
-Created by [Yongjin Lee](https://yongjin.info).
+Created by [Yongjin Lee](https://yongjin.info) · https://curriculum.yongjin.info
 
 ## Status
 | Phase | | Status |
@@ -10,8 +10,9 @@ Created by [Yongjin Lee](https://yongjin.info).
 | 1 | Master data set template + checker | Done |
 | 2 | Prototype: courses, drag-and-drop topics, I/R/M levels, custom topics and books, coverage view, browser autosave, JSON open/download | Done |
 | 3 | Google sign-in, save/open in Google Drive, sharing, conflict handling | **Done** (needs Google credentials: see [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md)) |
-| 4 | PDF and Word export (Summary / Standard / Full) | Next |
-| 5 | AI: plan-of-study upload, map analysis | |
+| 4 | PDF and Word export (Summary / Standard / Full), JSON backup | **Done** |
+| — | Custom domain `curriculum.yongjin.info` | See [docs/CUSTOM_DOMAIN.md](docs/CUSTOM_DOMAIN.md) |
+| 5 | AI: plan-of-study upload, map analysis | Next |
 | 6 | Launch: domain, privacy/terms, OAuth verification, analytics | |
 
 See [PLAN.md](PLAN.md) for the full specification.

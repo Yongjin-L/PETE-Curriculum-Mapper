@@ -2,7 +2,7 @@
 
 This takes about 20–30 minutes. You create a Google Cloud project, which gives the site three values. Then you paste those values into Vercel.
 
-Throughout, replace **`https://YOUR-SITE.vercel.app`** with your site's real address (Vercel → your project → **Domains**).
+These steps use **`https://curriculum.yongjin.info`**. Set up that address first ([CUSTOM_DOMAIN.md](CUSTOM_DOMAIN.md)). If you also want sign-in to work on your `vercel.app` address, add that address too wherever `curriculum.yongjin.info` appears below.
 
 ---
 
@@ -22,10 +22,11 @@ Throughout, replace **`https://YOUR-SITE.vercel.app`** with your site's real add
 3. **Audience:** choose **External**.
 4. **Contact information:** your email → agree → **Create**.
 5. **Branding** (left menu):
-   - Application home page: `https://YOUR-SITE.vercel.app`
-   - Privacy policy: `https://YOUR-SITE.vercel.app/privacy`
-   - Terms of service: `https://YOUR-SITE.vercel.app/terms`
-   - Save. (Authorized domains can wait until you have a custom domain; see the note at the end.)
+   - Application home page: `https://curriculum.yongjin.info`
+   - Privacy policy: `https://curriculum.yongjin.info/privacy`
+   - Terms of service: `https://curriculum.yongjin.info/terms`
+   - **Authorized domains:** add `yongjin.info`
+   - Save.
 6. **Data access** → **Add or remove scopes**, and tick:
    - `.../auth/userinfo.email`
    - `.../auth/userinfo.profile`
@@ -39,7 +40,7 @@ Throughout, replace **`https://YOUR-SITE.vercel.app`** with your site's real add
 1. Google Auth Platform → **Clients** → **Create client**.
 2. Application type: **Web application**. Name: `PETE Curriculum Mapper web`.
 3. **Authorized JavaScript origins** → add:
-   - `https://YOUR-SITE.vercel.app`
+   - `https://curriculum.yongjin.info`
    - `http://localhost:3000` (for local testing)
 4. Leave **Authorized redirect URIs** empty → **Create**.
 5. Copy the **Client ID** (it ends in `.apps.googleusercontent.com`). You don't need the client secret.
@@ -47,7 +48,7 @@ Throughout, replace **`https://YOUR-SITE.vercel.app`** with your site's real add
 ## 5. Create an API key for the file picker  → value 2
 1. Menu ☰ → **APIs & Services → Credentials** → **Create credentials → API key**. Copy the key.
 2. Click the new key, or **Edit API key**, to restrict it:
-   - **Application restrictions:** Websites → add `https://YOUR-SITE.vercel.app/*` and `http://localhost:3000/*`
+   - **Application restrictions:** Websites → add `https://curriculum.yongjin.info/*` and `http://localhost:3000/*`
    - **API restrictions:** Restrict key → select **Google Picker API** only
    - **Save**.
 
@@ -85,4 +86,4 @@ These three values are safe to be public. Google protects them with the origins 
 
 ---
 
-**Note for Phase 6 (going public):** Google's verification requires a domain you own. A `vercel.app` address can't be verified, so connect your custom domain first, then add it to Branding → Authorized domains, the client's JavaScript origins and the API key's websites, and submit for verification. The `drive.file` permission is "non-sensitive", so the review is light: brand verification only, with no security assessment.
+**Note for Phase 6 (going public):** verification needs proof that you own `yongjin.info` (Search Console; see step 5 of [CUSTOM_DOMAIN.md](CUSTOM_DOMAIN.md)). The `drive.file` permission is "non-sensitive", so the review is light: brand verification only, with no security assessment.

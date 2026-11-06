@@ -5,6 +5,7 @@ import { createPlanFile, downloadFile, DriveError, getFileMeta, listPlanFiles, u
 import { fetchUser, googleConfigured, pickerConfigured, pickFile, requestToken, revokeToken, type GoogleUser, type Token } from "@/lib/google";
 import { contentKey, sameContent } from "@/lib/merge";
 import { emptyPlan, normalizePlan, type Action } from "@/lib/plan";
+import { safeFileBase } from "@/lib/report";
 import type { Plan } from "@/lib/types";
 
 const DRIVE_KEY = "petemap:drive:v1";
@@ -57,8 +58,7 @@ function writeStored(s: Stored) {
 }
 
 export function fileNameFor(plan: Plan): string {
-  const base = (plan.program.name || plan.program.university || "Untitled curriculum map").replace(/[\\/:*?"<>|]+/g, " ").trim();
-  return `${base}.petemap.json`;
+  return `${safeFileBase(plan.program.name || plan.program.university || "Untitled curriculum map")}.petemap.json`;
 }
 
 const hasContent = (p: Plan) => p.courses.length > 0 || !!p.program.name || !!p.program.university || p.customTopics.length > 0;
@@ -277,7 +277,8 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
     };
   }, [enabled, sync]);
 
-  const signIn = useCallback(async () => {
+  /** autoSave: save the current map to a new Drive file right away instead of showing "My maps" (used by Export). */
+  const signIn = useCallback(async (opts?: { autoSave?: boolean }) => {
     try {
       const token = await requestToken(userRef.current?.email);
       const u = await fetchUser(token);
@@ -291,6 +292,8 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
       if (linkRef.current) {
         setStatus("saved");
         await sync();
+      } else if (opts?.autoSave && hasContent(planRef.current)) {
+        await createFile();
       } else {
         setStatus("unlinked");
         setMapsOpen(true);
@@ -298,7 +301,7 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
     } catch (e) {
       toast(e instanceof Error ? e.message : "Sign-in failed.");
     }
-  }, [setLink, sync, toast]);
+  }, [createFile, setLink, sync, toast]);
 
   const signOut = useCallback(() => {
     const removeLocal = confirm(
@@ -325,7 +328,7 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
         setMapsOpen(false);
         return;
       }
-      if (!l && hasContent(current) && !confirm("Your current map is not saved to Google Drive. Open the other map anyway? (Use Download JSON first to keep it.)"))
+      if (!l && hasContent(current) && !confirm("Your current map is not saved to Google Drive. Open the other map anyway? (Use Export → JSON first to keep it.)"))
         return;
       try {
         if (l && !sameContent(current, l.base)) await sync(); // save pending edits to the old file first

@@ -42,7 +42,7 @@ Browser (Next.js + React + TypeScript)
 Master data set ── public/data/dataset.json (built from CSVs by scripts/build-dataset.mjs)
 ```
 
-**Hosting:** Vercel (free Hobby tier to start; move to Pro if traffic or function limits require it) plus a custom domain (about $10–15/year).
+**Hosting:** Vercel (free Hobby tier to start; move to Pro if traffic or function limits require it) at **https://curriculum.yongjin.info** (subdomain of the creator's existing domain, DNS at GoDaddy).
 
 ## 3. Data model
 
@@ -92,7 +92,7 @@ See `dataset/README.md`. Tables: `textbooks`, `chapters`, `topics`, `topic_chapt
 | Standard | Summary + linked chapters (full citations) + SHAPE standards per topic |
 | Full | Standard + topics × courses matrix + standards coverage table + AI analysis (if run) |
 
-Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Every export carries "Created with PETE Curriculum Mapper by Yongjin Lee" and the data set version.
+Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Users can also switch individual sections on or off. When Google sign-in is configured, exporting requires sign-in (which also saves the map to Drive). Every export carries "Created with PETE Curriculum Mapper by Yongjin Lee (curriculum.yongjin.info)" and the data set version.
 
 ## 7. Anonymous usage statistics
 - **Tool:** Vercel Web Analytics (cookie-free, no personal data, no consent banner needed) for page views, plus custom events.
@@ -114,8 +114,8 @@ Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Every ex
 | 1 | Data set | Template, checker/converter, guide | **Done (template); creator fills in data** |
 | 2 | Prototype | Course list, topic panel, drag and drop, I/R/M, local autosave, custom topics, coverage view, JSON open/download | **Done** |
 | 3 | Google | Sign-in, Drive save/open, Picker, conflict merge | **Done** (credentials: docs/GOOGLE_SETUP.md) |
-| 4 | Export | PDF, Word (3 levels), JSON import/export | Next |
-| 5 | AI | `/api/parse-plan` with review table, `/api/analyze-map`, rate limits | |
+| 4 | Export | PDF, Word (3 levels), JSON import/export | **Done** |
+| 5 | AI | `/api/parse-plan` with review table, `/api/analyze-map`, rate limits | Next |
 | 6 | Launch | Domain, privacy/terms pages, OAuth verification, analytics, faculty pilot | |
 
 ## 10. Running costs (estimate)

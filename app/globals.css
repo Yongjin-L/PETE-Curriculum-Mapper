@@ -366,3 +366,15 @@ h3 { font-size: 0.95rem; }
 @media (max-width: 600px) {
   .compare { grid-template-columns: 1fr; }
 }
+
+/* Export dialog */
+.option-cards { display: grid; gap: 8px; }
+.option-cards.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.option-card {
+  display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; cursor: pointer; background: var(--surface);
+}
+.option-card input { position: absolute; opacity: 0; pointer-events: none; }
+.option-card:focus-within { outline: 2px solid var(--primary); outline-offset: 1px; }
+.option-card.on { border-color: var(--primary); background: var(--primary-soft); }
+@media (max-width: 600px) { .option-cards.three { grid-template-columns: 1fr; } }
