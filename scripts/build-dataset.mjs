@@ -1,16 +1,21 @@
 #!/usr/bin/env node
-// Validates the PETE Curriculum Mapper master data set (CSV files) and
-// converts it into a single JSON file the website loads.
+// Validates the PETE Curriculum Mapper master data set and converts it into the JSON file the website loads.
+// Runs automatically before every build (npm "prebuild"), so a bad spreadsheet stops the deploy
+// and the live site keeps its previous data.
 //
-// Usage:  node scripts/build-dataset.mjs [csvDir] [outFile]
-// Defaults: dataset/csv  ->  public/data/dataset.json
-// Exit code 1 if any ERROR is found (warnings do not fail the build).
+// Usage:  node scripts/build-dataset.mjs [source] [outFile]
+//   source: dataset/PETE_dataset_template.xlsx (default) or a folder of CSV files (one per tab)
+//   outFile: public/data/dataset.json
+// Exit code 1 if any ERROR is found (warnings do not fail the build). Columns whose header starts
+// with "(" are helper columns and are ignored.
 
 import fs from "node:fs";
 import path from "node:path";
+import readXlsxFile from "read-excel-file/node";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
-const csvDir = path.resolve(process.argv[2] ?? path.join(root, "dataset/csv"));
+const source = path.resolve(process.argv[2] ?? path.join(root, "dataset/PETE_dataset_template.xlsx"));
+const isCsvDir = fs.existsSync(source) && fs.statSync(source).isDirectory();
 const outFile = path.resolve(process.argv[3] ?? path.join(root, "public/data/dataset.json"));
 
 const SCHEMA = {
@@ -22,6 +27,7 @@ const SCHEMA = {
   topic_standards: { required: ["topic_id", "standard_id"], optional: [] },
 };
 
+const FORMAT_HINT = { textbook_id: "e.g. TB01", chapter_id: "e.g. TB01-C05", topic_id: "e.g. T001", standard_id: "e.g. S3 or S3a" };
 const ID_PATTERNS = {
   textbook_id: /^TB\d{2,}$/,
   chapter_id: /^TB\d{2,}-C\d{2,}$/,
@@ -56,22 +62,58 @@ function parseCsv(text) {
   return rows.filter((r) => r.some((v) => v.trim() !== ""));
 }
 
-function loadTable(name) {
-  const file = path.join(csvDir, `${name}.csv`);
-  if (!fs.existsSync(file)) { err(`${name}.csv: file not found in ${csvDir}`); return []; }
-  const [header = [], ...rows] = parseCsv(fs.readFileSync(file, "utf8"));
-  const cols = header.map((h) => h.trim());
-  const { required, optional } = SCHEMA[name];
-  for (const c of required) if (!cols.includes(c)) err(`${name}.csv: missing required column "${c}"`);
-  for (const c of cols) if (![...required, ...optional].includes(c)) warn(`${name}.csv: unknown column "${c}" (ignored)`);
+// Cell value -> trimmed string ("" for empty). Whole numbers lose any ".0"; dates become YYYY-MM-DD.
+function cellText(v) {
+  if (v === null || v === undefined) return "";
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "number") return Number.isInteger(v) ? String(v) : String(v);
+  return String(v).trim();
+}
 
-  return rows.map((r, i) => {
-    const line = i + 2; // header is line 1
-    const obj = { _line: line };
-    cols.forEach((c, j) => { obj[c] = (r[j] ?? "").trim(); });
-    for (const c of required) if (cols.includes(c) && !obj[c]) err(`${name}.csv line ${line}: "${c}" is empty`);
+let workbook = null; // { sheetName: rows[][] }
+async function loadWorkbook() {
+  if (isCsvDir) return;
+  if (!fs.existsSync(source)) { err(`Spreadsheet not found: ${source}`); workbook = {}; return; }
+  try {
+    const sheets = await readXlsxFile(source);
+    workbook = Object.fromEntries(sheets.map((s) => [s.sheet.trim(), s.data.map((r) => r.map(cellText))]));
+  } catch (e) {
+    err(`Could not read the spreadsheet (${e.message}). Save it as an Excel .xlsx file and try again.`);
+    workbook = {};
+  }
+}
+
+function tableRows(name) {
+  if (isCsvDir) {
+    const file = path.join(source, `${name}.csv`);
+    if (!fs.existsSync(file)) { err(`${name}.csv: file not found in ${source}`); return null; }
+    return parseCsv(fs.readFileSync(file, "utf8"));
+  }
+  if (!workbook[name]) { err(`Tab "${name}" is missing from the spreadsheet (tab names must stay exactly as they are)`); return null; }
+  return workbook[name];
+}
+
+function loadTable(name) {
+  const all = tableRows(name);
+  if (!all) return [];
+  const [rawHeader = [], ...rows] = all;
+  // Drop helper columns "(...)" and trailing empty headers.
+  const keep = rawHeader.map((h, i) => ({ h: String(h ?? "").trim(), i })).filter(({ h }) => h && !h.startsWith("("));
+  const cols = keep.map(({ h }) => h);
+  const { required, optional } = SCHEMA[name];
+  for (const c of required) if (!cols.includes(c)) err(`${name}: missing required column "${c}" in row 1`);
+  for (const c of cols) if (![...required, ...optional].includes(c)) warn(`${name}: unknown column "${c}" (ignored)`);
+
+  const label = isCsvDir ? `${name}.csv line` : `${name} row`;
+  return rows
+    .map((r, i) => ({ r, line: i + 2 })) // header is row 1
+    .filter(({ r }) => keep.some(({ i }) => String(r[i] ?? "").trim() !== "")) // skip blank rows
+    .map(({ r, line }) => {
+    const obj = { _line: line, _label: `${label} ${line}` };
+    keep.forEach(({ h, i }) => { obj[h] = String(r[i] ?? "").trim(); });
+    for (const c of required) if (cols.includes(c) && !obj[c]) err(`${obj._label}: "${c}" is empty`);
     for (const [col, re] of Object.entries(ID_PATTERNS)) {
-      if (obj[col] && !re.test(obj[col])) err(`${name}.csv line ${line}: ${col} "${obj[col]}" does not match format ${re}`);
+      if (obj[col] && !re.test(obj[col])) err(`${obj._label}: ${col} "${obj[col]}" is not in the right format (${FORMAT_HINT[col]})`);
     }
     return obj;
   });
@@ -81,26 +123,27 @@ function indexUnique(name, rows, key) {
   const map = new Map();
   for (const r of rows) {
     if (!r[key]) continue;
-    if (map.has(r[key])) err(`${name}.csv line ${r._line}: duplicate ${key} "${r[key]}" (first on line ${map.get(r[key])._line})`);
+    if (map.has(r[key])) err(`${r._label}: ${key} "${r[key]}" is used twice (first in row ${map.get(r[key])._line})`);
     else map.set(r[key], r);
   }
   return map;
 }
 
 function checkRef(name, r, col, map, target) {
-  if (r[col] && !map.has(r[col])) err(`${name}.csv line ${r._line}: ${col} "${r[col]}" not found in ${target}.csv`);
+  if (r[col] && !map.has(r[col])) err(`${r._label}: ${col} "${r[col]}" not found on the ${target} tab`);
 }
 
 function checkDuplicatePairs(name, rows, a, b) {
   const seen = new Set();
   for (const r of rows) {
     const k = `${r[a]}|${r[b]}`;
-    if (seen.has(k)) warn(`${name}.csv line ${r._line}: duplicate link ${r[a]} -> ${r[b]}`);
+    if (seen.has(k)) warn(`${r._label}: duplicate link ${r[a]} -> ${r[b]}`);
     seen.add(k);
   }
 }
 
 // ---- Load
+await loadWorkbook();
 const t = Object.fromEntries(Object.keys(SCHEMA).map((n) => [n, loadTable(n)]));
 
 // ---- Unique IDs
@@ -114,7 +157,7 @@ const names = new Map();
 for (const r of t.topics) {
   const k = r.topic_name?.toLowerCase();
   if (!k) continue;
-  if (names.has(k)) warn(`topics.csv line ${r._line}: topic name "${r.topic_name}" also used by ${names.get(k)}`);
+  if (names.has(k)) warn(`${r._label}: topic name "${r.topic_name}" is also used by ${names.get(k)}`);
   else names.set(k, r.topic_id);
 }
 
@@ -122,14 +165,14 @@ for (const r of t.topics) {
 for (const r of t.chapters) {
   checkRef("chapters", r, "textbook_id", textbooks, "textbooks");
   if (r.chapter_id && r.textbook_id && !r.chapter_id.startsWith(r.textbook_id + "-"))
-    warn(`chapters.csv line ${r._line}: chapter_id "${r.chapter_id}" does not start with its textbook_id "${r.textbook_id}"`);
+    warn(`${r._label}: chapter_id "${r.chapter_id}" does not start with its textbook_id "${r.textbook_id}"`);
 }
 for (const r of t.topic_chapters) {
   checkRef("topic_chapters", r, "topic_id", topics, "topics");
   checkRef("topic_chapters", r, "chapter_id", chapters, "chapters");
   if (!r.relevance) r.relevance = "primary";
   if (!["primary", "secondary"].includes(r.relevance))
-    err(`topic_chapters.csv line ${r._line}: relevance must be "primary" or "secondary", got "${r.relevance}"`);
+    err(`${r._label}: relevance must be "primary" or "secondary", got "${r.relevance}"`);
 }
 for (const r of t.topic_standards) {
   checkRef("topic_standards", r, "topic_id", topics, "topics");
@@ -159,11 +202,11 @@ console.log(`${errors.length} error(s), ${warnings.length} warning(s)`);
 if (errors.length) { console.log("\nNo JSON written. Fix the errors above and run again."); process.exit(1); }
 
 // ---- Build JSON (topics carry their links so the app needs no joins)
-const strip = ({ _line, ...rest }) => rest;
+const strip = ({ _line, _label, ...rest }) => rest;
 const num = (v) => (v === "" || v === undefined ? null : Number.isNaN(Number(v)) ? v : Number(v));
 
 const dataset = {
-  datasetVersion: new Date().toISOString().slice(0, 10),
+  datasetVersion: "",
   textbooks: t.textbooks.map((r) => ({ ...strip(r), edition: num(r.edition), year: num(r.year) })),
   chapters: t.chapters.map((r) => ({ ...strip(r), chapter_no: num(r.chapter_no) })),
   standards: t.standards.map(strip),
@@ -175,6 +218,12 @@ const dataset = {
   })),
 };
 
+// Keep the previous version label when the content hasn't changed, so rebuilds don't bump it.
+let previous = null;
+try { previous = JSON.parse(fs.readFileSync(outFile, "utf8")); } catch { /* first build */ }
+const sameContent = previous && JSON.stringify({ ...previous, datasetVersion: "" }) === JSON.stringify(dataset);
+dataset.datasetVersion = sameContent ? previous.datasetVersion : new Date().toISOString().slice(0, 10);
+
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, JSON.stringify(dataset, null, 2) + "\n");
-console.log(`\nWrote ${path.relative(process.cwd(), outFile) || outFile}`);
+console.log(`\n${sameContent ? "No content changes" : "Updated"}: wrote ${path.relative(process.cwd(), outFile) || outFile} (data set version ${dataset.datasetVersion})`);

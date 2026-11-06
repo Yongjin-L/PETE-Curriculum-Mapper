@@ -3,7 +3,7 @@
 Work through this in order. Each item says where to do it. Items marked ✅ are already built into the site.
 
 ## A. Content (most important)
-- [ ] **Replace the sample data set.** The site still shows the 7 sample topics and two "SAMPLE Textbook" entries. Fill in `dataset/PETE_dataset_template.xlsx`, export each tab as CSV into `dataset/csv/`, run `npm run dataset`, and commit. You can also send the spreadsheet to Claude to do this.
+- [ ] **Replace the sample data set.** The site still shows the 7 sample topics and two "SAMPLE Textbook" entries. Edit `dataset/PETE_dataset_template.xlsx` and upload it back to the `dataset` folder on GitHub, or send it to Claude. See [dataset/README.md](../dataset/README.md).
 - [ ] Check the SHAPE standard labels in `standards.csv` against SHAPE America's official 2017 document.
 - [ ] Read the **Help**, **Privacy** and **Terms** pages (`/help`, `/privacy`, `/terms`) and adjust the wording if you like. Your university may also want to review them.
 

@@ -1,40 +1,51 @@
 # Master data set guide
 
-The master data set is the shared list of topics, textbooks, chapters and SHAPE standards that every user sees. It is maintained by the creator. (Users' own custom topics are stored separately in their Drive.)
+The master data set is the shared list of topics, textbooks, chapters and SHAPE standards that every user sees. It lives in one Excel file:
 
-## Files
-| File | Purpose |
-|---|---|
-| `PETE_dataset_template.xlsx` | Workbook to fill in: one tab per table, plus instructions. Upload it to Google Sheets or open it in Excel |
-| `csv/*.csv` | The source of truth the website is built from (one CSV per tab) |
-| `../public/data/dataset.json` | Generated file the website loads. Don't edit it by hand |
+**`dataset/PETE_dataset_template.xlsx`**
 
-## Tables
-| Table | Columns (required in **bold**) | Notes |
+Edit that file, put it back in this folder, and the site updates itself. There are no CSV files to export.
+
+## Editing the workbook
+- Open it in **Excel**, or upload it to **Google Drive** and open it with Google Sheets. In Sheets, download it again with File → Download → Microsoft Excel (.xlsx).
+- The **Instructions** tab explains everything. In short:
+  - **White columns** are for you to fill in. Hover over a header to see a note about it.
+  - **Grey columns** are automatic helpers that show names next to codes (for example the topic name beside `T004`). The site ignores them.
+  - **Dropdowns** offer valid IDs in the linking tabs: `topic_chapters`, `topic_standards`, and `textbook_id` on `chapters`.
+  - **Red ID cells** mean the ID is used twice.
+  - **Yellow rows** are samples to replace.
+  - On the **topics** tab, *(chapters linked)* and *(standards linked)* show 0 when a topic still needs links.
+
+| Tab | You fill in | Notes |
 |---|---|---|
-| textbooks | **textbook_id**, **title**, **authors**, edition, year, publisher, isbn | ID format `TB01` |
-| chapters | **chapter_id**, **textbook_id**, **chapter_no**, **chapter_title** | ID format `TB01-C05` |
-| topics | **topic_id**, **topic_name**, description, keywords | ID format `T001`; keywords separated by `;` |
-| topic_chapters | **topic_id**, **chapter_id**, relevance | relevance = `primary` (default) or `secondary` |
-| standards | **standard_id**, **standard_no**, **short_label**, component | `S1`–`S6`; optional components as `S1a`, `S1b`… |
-| topic_standards | **topic_id**, **standard_id** | One row per link |
+| textbooks | textbook_id, title, authors, edition, year, publisher, isbn | IDs `TB01`, `TB02`, … |
+| chapters | chapter_id, textbook_id, chapter_no, chapter_title | `chapter_id` = book ID + `-C` + number, e.g. `TB01-C05`; a grey column suggests it |
+| topics | topic_id, topic_name, description, keywords | IDs `T001`, …; keywords separated by `;` |
+| topic_chapters | topic_id, chapter_id, relevance | one row per link; relevance `primary` (default) or `secondary` |
+| standards | standard_id, standard_no, component, short_label | `S1`–`S6`; optional components `S1a`, `S1b`, … |
+| topic_standards | topic_id, standard_id | one row per link |
 
-A topic can link to any number of chapters and standards (one row per link).
+## Publishing your changes
+**Option A (easiest):** send the file to Claude and ask to check and publish it.
 
-## Workflow
-1. Fill in the workbook. Replace or delete every `SAMPLE` row.
-2. Download each tab as CSV with the exact tab name (e.g. `topics.csv`) into `dataset/csv/`.
-3. Run the checker:
-   ```bash
-   node scripts/build-dataset.mjs
+**Option B (GitHub website):**
+1. Go to **github.com/Yongjin-L/PETE-Curriculum-Mapper** → open the **dataset** folder.
+2. **Add file → Upload files** → drop your `PETE_dataset_template.xlsx`. It must have exactly this name, so that it replaces the old one.
+3. Click **Commit changes**.
+4. Vercel rebuilds the site in about a minute. **The data is checked first.** If anything is wrong, the rebuild stops and the live site keeps its previous data. Vercel → **Deployments** → the failed deployment → **Build logs** lists each problem with its tab and row, for example:
    ```
-   - **ERROR**: must be fixed (duplicate ID, broken link, wrong ID format, empty required field). No JSON is written.
-   - **WARNING**: worth checking (a topic with no chapters or no standard, a duplicate topic name, a textbook with no chapters).
-4. When it reports `0 error(s)`, `public/data/dataset.json` is updated and ready to publish.
+   ERROR    topic_chapters row 12: chapter_id "TB02-C14" not found on the chapters tab
+   ERROR    topics row 40: topic_id "T031" is used twice (first in row 33)
+   ```
+   Fix those rows and upload again. **WARNING** lines, such as a topic with no linked chapter, don't stop the rebuild.
 
-To rebuild the blank workbook from the CSVs: `python3 scripts/make-template-xlsx.py`
+**Option C (on a computer with the project):** run `npm run dataset` to check the file and update `public/data/dataset.json`, then commit.
 
 ## Rules
-- **Never reuse or renumber an ID** once the site is live; saved plans refer to topics by ID. To remove a topic, ask for a `retired` column to be added rather than deleting the row.
-- **Copyright:** include citations and chapter titles only, never text from the books. Use short paraphrased labels for the SHAPE standards and verify the numbering against SHAPE America's official 2017 document.
-- The sample `standards.csv` lists the six standard areas only. Add component rows (`S1a`…) if you want topics mapped at component level.
+- **Never reuse or renumber an ID** once the site is in use, because saved maps refer to topics by ID. To retire a topic, ask Claude to add a `retired` column; don't delete the row.
+- **Copyright:** list titles, authors and chapter titles only; don't copy text from the books. Use short paraphrased labels for the SHAPE standards and check the numbering against SHAPE America's official 2017 document.
+- Keep row 1 (the headers) and the tab names exactly as they are.
+
+## For maintainers
+- `scripts/build-dataset.mjs` checks the workbook (or a folder of CSV files) and writes `public/data/dataset.json`. It runs automatically before every build (`prebuild`). The data set version changes only when the content changes.
+- `scripts/make-template-xlsx.py` rebuilds the workbook's formatting (dropdowns, helper formulas, notes) while keeping its data: `npm run dataset:template`.

@@ -47,7 +47,7 @@ Master data set ── public/data/dataset.json (built from CSVs by scripts/buil
 ## 3. Data model
 
 ### Master data set (maintained by the creator)
-See `dataset/README.md`. Tables: `textbooks`, `chapters`, `topics`, `topic_chapters`, `standards`, `topic_standards`.
+See `dataset/README.md`. One Excel workbook (`dataset/PETE_dataset_template.xlsx`, with dropdowns and helper columns) is the source of truth; tabs: `textbooks`, `chapters`, `topics`, `topic_chapters`, `standards`, `topic_standards`. It is checked and converted to JSON automatically before every build.
 
 ### User plan file (`<Program name>.petemap.json` in the user's Drive)
 ```json

@@ -28,10 +28,9 @@ Then open http://localhost:3000.
 Google sign-in needs `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_APP_ID` (put them in `.env.local` for local use). Without them, the site works in browser-only mode.
 
 ## Update the topic data set
-1. Fill in `dataset/PETE_dataset_template.xlsx` (see [dataset/README.md](dataset/README.md)).
-2. Save each tab as CSV into `dataset/csv/`.
-3. Run `npm run dataset`. It checks the data and writes `public/data/dataset.json`.
-4. Commit and push; the site rebuilds with the new data.
+1. Edit `dataset/PETE_dataset_template.xlsx` in Excel or Google Sheets (see [dataset/README.md](dataset/README.md)).
+2. Upload it back to the `dataset` folder on GitHub (same file name) and commit.
+3. Vercel rebuilds. The data is checked first; if there are errors, the build stops and the build log lists them by tab and row.
 
 ## Project layout
 ```
@@ -39,7 +38,7 @@ app/                 Next.js pages and global styles
 components/          Mapper (main screen), CourseList, TopicPanel, Coverage, dialogs
 lib/                 Types, plan state, data set helpers, Google sign-in, Drive client, merge
 docs/                Setup guides
-dataset/             Data set template, CSV source files, guide
+dataset/             The data set workbook (source of truth) and its guide
 public/data/         Generated dataset.json loaded by the site
-scripts/             Data set checker/converter and template builder
+scripts/             Data set checker/converter (runs before every build) and workbook formatter
 ```

@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "dataset": "node scripts/build-dataset.mjs",
-    "dataset:template": "python3 scripts/make-template-xlsx.py"
+    "dataset:template": "python3 scripts/make-template-xlsx.py",
+    "prebuild": "node scripts/build-dataset.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.1.0",
@@ -29,6 +30,7 @@
     "@types/node": "22.19.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "read-excel-file": "9.3.12",
     "typescript": "5.9.3"
   }
 }
