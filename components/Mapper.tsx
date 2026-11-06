@@ -15,6 +15,8 @@ import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { buildLibrary } from "@/lib/dataset";
 import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan } from "@/lib/plan";
 import { CourseList } from "./CourseList";
+import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
+import { useDrive } from "./useDrive";
 import { Coverage } from "./Coverage";
 import { TopicPanel } from "./TopicPanel";
 
@@ -27,6 +29,7 @@ export function Mapper() {
   const [tab, setTab] = useState<Tab>("map");
   const [dragName, setDragName] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const lib = useMemo(() => buildLibrary(plan), [plan]);
@@ -40,6 +43,8 @@ export function Mapper() {
   useEffect(() => {
     if (loaded) setSaveOk(saveLocalPlan(plan));
   }, [plan, loaded]);
+
+  const drive = useDrive({ plan, loaded, dispatch, toast: setToast });
 
   useEffect(() => {
     if (!toast) return;
@@ -85,7 +90,8 @@ export function Mapper() {
   const importJson = async (file: File) => {
     try {
       const next = normalizePlan(JSON.parse(await file.text()));
-      if (plan.courses.length > 0 && !confirm("Replace your current map with the imported file?")) return;
+      if (plan.courses.length > 0 && !confirm(drive.link ? "Open the imported file as a new map? Your current map stays in Google Drive." : "Replace your current map with the imported file?")) return;
+      drive.detach();
       dispatch({ type: "replacePlan", plan: next });
       setToast(`Imported ${next.courses.length} course(s) and ${next.placements.length} placement(s).`);
     } catch (err) {
@@ -94,7 +100,11 @@ export function Mapper() {
   };
 
   const newPlan = () => {
-    if (confirm("Start a new, empty map? Download your current map as JSON first if you want to keep it.")) {
+    const msg = drive.link
+      ? "Start a new, empty map? Your current map stays saved in Google Drive."
+      : "Start a new, empty map? Download your current map as JSON first if you want to keep it.";
+    if (confirm(msg)) {
+      drive.detach();
       dispatch({ type: "replacePlan", plan: emptyPlan() });
       setTab("map");
     }
@@ -115,9 +125,18 @@ export function Mapper() {
           </div>
         </div>
         <div className="actions">
-          <span className={"save-status small" + (saveOk ? "" : " warn")} title={saveOk ? "Saved in this browser. Google Drive saving is coming soon." : "This browser is blocking storage. Download your map as JSON to keep it."}>
-            {saveOk ? "✓ Saved in this browser" : "⚠ Not saved"}
-          </span>
+          {saveOk ? (
+            <AccountArea drive={drive} onShare={() => setShareOpen(true)} />
+          ) : (
+            <span className="save-status small warn" title="This browser is blocking storage. Sign in to save to Google Drive, or download your map as JSON.">
+              ⚠ Browser storage blocked
+            </span>
+          )}
+          {!saveOk && drive.status === "signed-out" && (
+            <button className="btn" onClick={drive.signIn}>
+              Sign in
+            </button>
+          )}
           <button className="btn" onClick={() => fileInput.current?.click()}>
             Open JSON
           </button>
@@ -179,8 +198,12 @@ export function Mapper() {
         <a href="https://yongjin.info" target="_blank" rel="noopener noreferrer">
           Yongjin Lee
         </a>{" "}
-        · Data set version {plan.datasetVersion}
+        · Data set version {plan.datasetVersion} · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
       </footer>
+
+      {drive.mapsOpen && <MyMapsDialog drive={drive} plan={plan} onNewMap={newPlan} />}
+      {shareOpen && drive.link && <ShareDialog drive={drive} onClose={() => setShareOpen(false)} />}
+      {drive.conflict && <ConflictDialog drive={drive} />}
 
       {toast && (
         <div className="toast" role="status">

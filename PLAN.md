@@ -113,8 +113,8 @@ Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Every ex
 |---|---|---|---|
 | 1 | Data set | Template, checker/converter, guide | **Done (template); creator fills in data** |
 | 2 | Prototype | Course list, topic panel, drag and drop, I/R/M, local autosave, custom topics, coverage view, JSON open/download | **Done** |
-| 3 | Google | Sign-in, Drive save/open, Picker, conflict merge | Next |
-| 4 | Export | PDF, Word (3 levels), JSON import/export | |
+| 3 | Google | Sign-in, Drive save/open, Picker, conflict merge | **Done** (credentials: docs/GOOGLE_SETUP.md) |
+| 4 | Export | PDF, Word (3 levels), JSON import/export | Next |
 | 5 | AI | `/api/parse-plan` with review table, `/api/analyze-map`, rate limits | |
 | 6 | Launch | Domain, privacy/terms pages, OAuth verification, analytics, faculty pilot | |
 
