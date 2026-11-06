@@ -6,6 +6,7 @@ import { fetchUser, googleConfigured, pickerConfigured, pickFile, requestToken, 
 import { contentKey, sameContent } from "@/lib/merge";
 import { emptyPlan, normalizePlan, type Action } from "@/lib/plan";
 import { safeFileBase } from "@/lib/report";
+import { track } from "@/lib/track";
 import type { Plan } from "@/lib/types";
 
 const DRIVE_KEY = "petemap:drive:v1";
@@ -189,6 +190,7 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
       const name = fileNameFor(content);
       const meta = await createPlanFile(token, name, JSON.stringify(content, null, 2));
       autoCreateRef.current = false;
+      track("drive_file_created");
       setLink(linkFrom(meta, content, name));
       setError(null);
       setStatus("saved");
@@ -283,6 +285,7 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
       const token = await requestToken(userRef.current?.email);
       const u = await fetchUser(token);
       tokenRef.current = token;
+      track("signed_in");
       const previous = userRef.current;
       userRef.current = u;
       setUser(u);
@@ -344,6 +347,7 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
         setError(null);
         setMapsOpen(false);
         toast(`Opened "${meta.name}" from Google Drive.`);
+        track("drive_map_opened");
       } catch (e) {
         if (e instanceof Error && /schemaVersion|Not a plan/.test(e.message)) toast("That file is not a PETE Curriculum Mapper map.");
         else fail(e);
@@ -386,6 +390,7 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
       const token = validToken();
       if (!c || !token) return;
       setConflictBoth(null);
+      track("conflict_resolved");
       try {
         if (choice === "theirs") {
           applyRemote(c.theirs, c.meta);

@@ -11,9 +11,10 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Dispatch } from "react";
 import { buildLibrary } from "@/lib/dataset";
-import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan } from "@/lib/plan";
+import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan, type Action } from "@/lib/plan";
+import { track, trackInstitution } from "@/lib/track";
 import { CourseList } from "./CourseList";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
 import { ExportDialog } from "./ExportDialog";
@@ -25,7 +26,24 @@ import { TopicPanel } from "./TopicPanel";
 type Tab = "map" | "coverage";
 
 export function Mapper() {
-  const [plan, dispatch] = useReducer(planReducer, undefined, emptyPlan);
+  const [plan, rawDispatch] = useReducer(planReducer, undefined, emptyPlan);
+  const planRef = useRef(plan);
+  planRef.current = plan;
+
+  // Same as dispatch, plus anonymous usage counting (counts only, never content).
+  const dispatch: Dispatch<Action> = useCallback((a: Action) => {
+    const p = planRef.current;
+    if (a.type === "addCourses") {
+      const n = a.courses.filter((c) => c.number.trim() || c.name.trim()).length;
+      if (n && p.courses.length === 0) track("map_started");
+      if (n) track(a.source === "ai" ? "courses_added_ai" : a.source === "paste" ? "courses_added_paste" : "courses_added_manual", n);
+    } else if (a.type === "placeTopic") {
+      if (!p.placements.some((x) => x.courseId === a.courseId && x.topicId === a.topicId)) track("topic_placed");
+    } else if (a.type === "saveCustomTopic") {
+      if (!p.customTopics.some((t) => t.topic_id === a.topic.topic_id)) track("custom_topic_added");
+    } else if (a.type === "addCustomTextbook") track("custom_book_added");
+    rawDispatch(a);
+  }, []);
   const [loaded, setLoaded] = useState(false);
   const [saveOk, setSaveOk] = useState(true);
   const [tab, setTab] = useState<Tab>("map");
@@ -40,12 +58,17 @@ export function Mapper() {
   // Load the saved plan once, then autosave on every change.
   useEffect(() => {
     const saved = loadLocalPlan();
-    if (saved) dispatch({ type: "replacePlan", plan: saved });
+    if (saved) rawDispatch({ type: "replacePlan", plan: saved });
     setLoaded(true);
   }, []);
   useEffect(() => {
     if (loaded) setSaveOk(saveLocalPlan(plan));
   }, [plan, loaded]);
+
+  // Lets the site count how many different institutions use it (only a one-way hash is stored).
+  useEffect(() => {
+    if (loaded && plan.program.university) trackInstitution(plan.program.university);
+  }, [loaded, plan.program.university]);
 
   const drive = useDrive({ plan, loaded, dispatch, toast: setToast });
   const ai = useAi(drive);
@@ -86,6 +109,7 @@ export function Mapper() {
       if (plan.courses.length > 0 && !confirm(drive.link ? "Open the imported file as a new map? Your current map stays in Google Drive." : "Replace your current map with the imported file?")) return;
       drive.detach();
       dispatch({ type: "replacePlan", plan: next });
+      track("json_imported");
       setToast(`Imported ${next.courses.length} course(s) and ${next.placements.length} placement(s).`);
     } catch (err) {
       alert(`Could not import this file. ${err instanceof Error ? err.message : ""}`);
@@ -119,7 +143,13 @@ export function Mapper() {
         </div>
         <div className="actions">
           {saveOk ? (
-            <AccountArea drive={drive} onShare={() => setShareOpen(true)} />
+            <AccountArea
+              drive={drive}
+              onShare={() => {
+                setShareOpen(true);
+                track("share_opened");
+              }}
+            />
           ) : (
             <span className="save-status small warn" title="This browser is blocking storage. Sign in to save to Google Drive, or download your map as JSON.">
               ⚠ Browser storage blocked
@@ -130,6 +160,9 @@ export function Mapper() {
               Sign in
             </button>
           )}
+          <a className="btn" href="/help" target="_blank" rel="noopener">
+            Help
+          </a>
           <button className="btn" onClick={() => fileInput.current?.click()}>
             Open JSON
           </button>
@@ -191,7 +224,7 @@ export function Mapper() {
         <a href="https://yongjin.info" target="_blank" rel="noopener noreferrer">
           Yongjin Lee
         </a>{" "}
-        · Data set version {plan.datasetVersion} · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+        · Data set version {plan.datasetVersion} · <a href="/help">Help</a> · <a href={process.env.NEXT_PUBLIC_FEEDBACK_URL || "https://yongjin.info"} target="_blank" rel="noopener noreferrer">Feedback</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
       </footer>
 
       {drive.mapsOpen && <MyMapsDialog drive={drive} plan={plan} onNewMap={newPlan} />}

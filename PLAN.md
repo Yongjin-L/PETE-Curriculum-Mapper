@@ -97,7 +97,8 @@ See `dataset/README.md`. Tables: `textbooks`, `chapters`, `topics`, `topic_chapt
 Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Users can also switch individual sections on or off. When Google sign-in is configured, exporting requires sign-in (which also saves the map to Drive). Every export carries "Created with PETE Curriculum Mapper by Yongjin Lee (curriculum.yongjin.info)" and the data set version.
 
 ## 7. Anonymous usage statistics
-- **Tool:** Vercel Web Analytics (cookie-free, no personal data, no consent banner needed) for page views, plus custom events.
+- **Tool:** Vercel Web Analytics (cookie-free) for page views; feature counts are batched in the browser and stored as monthly and all-time counters in Upstash Redis (`/api/event`), shown on a private `/stats?key=STATS_KEY` page.
+- Distinct institutions are estimated with a HyperLogLog of a one-way hash of the normalized university name; names are never stored.
 - **Events** (counts only, no content, no IDs): `plan_created`, `course_added_manual`, `plan_uploaded_ai`, `topic_placed`, `drive_saved`, `export_pdf`, `export_docx`, `export_json`, `analysis_run`, `custom_topic_added`.
 - **Optional:** a voluntary "Add your program to the list of adopters" form, if publications or grants need institution counts.
 - Alternatives if more detail is needed later: Plausible or self-hosted Umami.
@@ -118,7 +119,7 @@ Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Users ca
 | 3 | Google | Sign-in, Drive save/open, Picker, conflict merge | **Done** (credentials: docs/GOOGLE_SETUP.md) |
 | 4 | Export | PDF, Word (3 levels), JSON import/export | **Done** |
 | 5 | AI | `/api/parse-plan` with review table, `/api/analyze-map`, rate limits | **Done** (setup: docs/AI_SETUP.md) |
-| 6 | Launch | Domain, privacy/terms pages, OAuth verification, analytics, faculty pilot | |
+| 6 | Launch | Stats, help, feedback link, polish (**Done**); domain, OAuth publishing, pilot: docs/LAUNCH_CHECKLIST.md | **Done** (owner steps remain) |
 
 ## 10. Running costs (estimate)
 | Item | Cost |

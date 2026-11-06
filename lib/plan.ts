@@ -44,7 +44,7 @@ export function suggestLevel(plan: Plan, courseId: string, topicId: string): Lev
 
 export type Action =
   | { type: "setProgram"; university?: string; name?: string }
-  | { type: "addCourses"; courses: { number: string; name: string }[] }
+  | { type: "addCourses"; courses: { number: string; name: string }[]; source?: "manual" | "paste" | "ai" }
   | { type: "updateCourse"; id: string; number: string; name: string }
   | { type: "deleteCourse"; id: string }
   | { type: "moveCourse"; id: string; delta: -1 | 1 }

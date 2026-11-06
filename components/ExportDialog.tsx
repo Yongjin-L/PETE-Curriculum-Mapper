@@ -4,6 +4,7 @@ import { useState } from "react";
 import { buildReport, downloadBlob, exportFileName, LEVEL_INFO, PRESETS, type ExportLevel, type Sections } from "@/lib/report";
 import type { Plan } from "@/lib/types";
 import { Modal } from "./Modal";
+import { track } from "@/lib/track";
 import { fileNameFor, type DriveApi } from "./useDrive";
 
 type Format = "pdf" | "docx" | "json";
@@ -54,6 +55,7 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
           downloadBlob(await renderDocx(report), exportFileName(plan, level, "docx"));
         }
       }
+      track(format === "pdf" ? "export_pdf" : format === "docx" ? "export_docx" : "export_json");
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

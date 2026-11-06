@@ -74,7 +74,7 @@ export async function verifyGoogle(req: Request): Promise<GoogleIdentity> {
 
 const memory = new Map<string, number>();
 
-async function redis(commands: (string | number)[][]): Promise<unknown[]> {
+export async function redis(commands: (string | number)[][]): Promise<unknown[]> {
   const r = await fetch(`${AI_CONFIG.redisUrl}/pipeline`, {
     method: "POST",
     headers: { Authorization: `Bearer ${AI_CONFIG.redisToken}`, "Content-Type": "application/json" },

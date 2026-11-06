@@ -410,3 +410,11 @@ h3 { font-size: 0.95rem; }
 .md ul, .md ol { margin: 6px 0; padding-left: 22px; }
 .md li { margin: 3px 0; line-height: 1.5; }
 @media (max-width: 600px) { .review-table td:nth-child(2) { width: 100px; } }
+
+/* Help & stats pages */
+.doc a.btn { text-decoration: none; }
+a.btn { color: var(--text); text-decoration: none; display: inline-block; }
+.wide-doc { max-width: 1100px; }
+.stat-tiles { margin: 14px 0 18px; }
+.stat-big { font-size: 1.8rem; font-weight: 700; margin: 4px 0; }
+.stats-table td { font-variant-numeric: tabular-nums; }

@@ -1,6 +1,7 @@
 import { aiUnavailableReason, consume, errorResponse, HttpError, verifyGoogle } from "@/lib/server/guard";
 import { analyzeMap } from "@/lib/server/ai";
 import { normalizePlan } from "@/lib/plan";
+import { recordServerEvent } from "@/lib/server/stats";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
     const { usage, release } = await consume("analyze", id.sub);
     try {
       const markdown = await analyzeMap(plan);
+      await recordServerEvent("ai_analysis");
       return Response.json({ markdown, usage, createdAt: new Date().toISOString() });
     } catch (e) {
       await release();

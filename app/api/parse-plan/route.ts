@@ -1,5 +1,6 @@
 import { aiUnavailableReason, consume, errorResponse, HttpError, verifyGoogle } from "@/lib/server/guard";
 import { parsePlanOfStudy } from "@/lib/server/ai";
+import { recordServerEvent } from "@/lib/server/stats";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
     const { usage, release } = await consume("parse", id.sub);
     try {
       const result = await parsePlanOfStudy(input);
+      await recordServerEvent("ai_upload");
       return Response.json({ ...result, usage });
     } catch (e) {
       await release();

@@ -13,7 +13,7 @@ Created by [Yongjin Lee](https://yongjin.info) · https://curriculum.yongjin.inf
 | 4 | PDF and Word export (Summary / Standard / Full), JSON backup | **Done** |
 | — | Custom domain `curriculum.yongjin.info` | See [docs/CUSTOM_DOMAIN.md](docs/CUSTOM_DOMAIN.md) |
 | 5 | AI: plan-of-study upload with review, map analysis (in exports), daily limits | **Done** (needs API key: see [docs/AI_SETUP.md](docs/AI_SETUP.md)) |
-| 6 | Launch: OAuth verification, analytics, help page, pilot | Next |
+| 6 | Launch: anonymous usage statistics (+ private /stats page), help page, feedback link, site icon/sharing preview, security headers | **Done**. Remaining steps: [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) |
 
 See [PLAN.md](PLAN.md) for the full specification.
 

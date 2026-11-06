@@ -208,7 +208,7 @@ function AddCourses({ dispatch, hasCourses, ai, plan }: { dispatch: Dispatch<Act
           onSubmit={(e) => {
             e.preventDefault();
             if (!num.trim() && !name.trim()) return;
-            dispatch({ type: "addCourses", courses: [{ number: num, name }] });
+            dispatch({ type: "addCourses", source: "manual", courses: [{ number: num, name }] });
             setNum("");
             setName("");
             (e.currentTarget.elements.namedItem("num") as HTMLInputElement)?.focus();
@@ -250,7 +250,7 @@ function AddCourses({ dispatch, hasCourses, ai, plan }: { dispatch: Dispatch<Act
             className="btn btn-primary"
             disabled={parsed.length === 0}
             onClick={() => {
-              dispatch({ type: "addCourses", courses: parsed });
+              dispatch({ type: "addCourses", source: "paste", courses: parsed });
               setText("");
               setMode("one");
             }}

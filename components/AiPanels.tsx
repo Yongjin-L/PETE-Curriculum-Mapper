@@ -111,7 +111,7 @@ export function UploadPlan({ ai, plan, dispatch, onDone }: { ai: AiApi; plan: Pl
             className="btn btn-primary"
             disabled={kept.length === 0}
             onClick={() => {
-              dispatch({ type: "addCourses", courses: kept.map(({ number, name }) => ({ number, name })) });
+              dispatch({ type: "addCourses", source: "ai", courses: kept.map(({ number, name }) => ({ number, name })) });
               if (canSetProgram && setProgram)
                 dispatch({
                   type: "setProgram",

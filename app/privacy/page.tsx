@@ -54,8 +54,11 @@ export default function Privacy() {
 
       <h2>Usage statistics</h2>
       <p>
-        The Service collects anonymous, aggregate usage statistics (such as page views and counts of features used) without cookies and without
-        personal information, to understand how the tool is used.
+        The Service collects anonymous, aggregate usage statistics to understand how the tool is used and to report its reach (for example, in
+        presentations or grant applications). These are (1) page-view statistics from Vercel Web Analytics, which uses no cookies and does not
+        identify visitors, and (2) counts of features used (such as &quot;courses added&quot; or &quot;PDF exports&quot;). To estimate how many
+        institutions use the tool, the university name you enter is converted into a one-way code that is counted and cannot be turned back
+        into the name. No names, email addresses or map content are included in these statistics.
       </p>
 
       <h2>Your choices</h2>
