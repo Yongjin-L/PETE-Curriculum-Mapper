@@ -20,6 +20,7 @@ const SECTION_LABELS: { key: keyof Sections; label: string }[] = [
   { key: "references", label: "Reference list of textbooks" },
   { key: "coverage", label: "Standards coverage table" },
   { key: "matrix", label: "Topics × courses matrix (landscape page)" },
+  { key: "analysis", label: "AI analysis" },
 ];
 
 export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: DriveApi; onClose: () => void }) {
@@ -44,7 +45,7 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
       if (format === "json") {
         downloadBlob(new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" }), fileNameFor(plan));
       } else {
-        const report = buildReport(plan, sections);
+        const report = buildReport(plan, sections, plan.analysis?.markdown ?? null);
         if (format === "pdf") {
           const { renderPdf } = await import("@/lib/export-pdf");
           downloadBlob(renderPdf(report), exportFileName(plan, level, "pdf"));
@@ -127,12 +128,23 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
               <input type="checkbox" checked disabled />
               <span>Program details and each course&apos;s topics with I/R/M levels</span>
             </label>
-            {SECTION_LABELS.map((s) => (
-              <label key={s.key} className="check">
-                <input type="checkbox" checked={sections[s.key]} onChange={(e) => setSections({ ...sections, [s.key]: e.target.checked })} />
-                <span>{s.label}</span>
-              </label>
-            ))}
+            {SECTION_LABELS.map((s) => {
+              const unavailable = s.key === "analysis" && !plan.analysis;
+              return (
+                <label key={s.key} className={"check" + (unavailable ? " muted" : "")}>
+                  <input
+                    type="checkbox"
+                    disabled={unavailable}
+                    checked={!unavailable && sections[s.key]}
+                    onChange={(e) => setSections({ ...sections, [s.key]: e.target.checked })}
+                  />
+                  <span>
+                    {s.label}
+                    {unavailable && " (run it on the Coverage tab first)"}
+                  </span>
+                </label>
+              );
+            })}
           </fieldset>
         </>
       )}

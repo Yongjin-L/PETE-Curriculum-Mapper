@@ -79,5 +79,11 @@ export interface Plan {
   customTopics: Topic[];
   customTextbooks: Textbook[];
   customChapters: Chapter[];
+  analysis: Analysis | null; // latest AI analysis, if any
   meta: { createdAt: string; updatedAt: string };
+}
+
+export interface Analysis {
+  markdown: string;
+  createdAt: string;
 }

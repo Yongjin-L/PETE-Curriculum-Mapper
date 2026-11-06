@@ -72,6 +72,7 @@ export function mergePlans(base: Plan, mine: Plan, theirs: Plan): Plan {
     customTopics,
     customTextbooks,
     customChapters,
+    analysis: mergeField(base.analysis, mine.analysis, theirs.analysis),
     meta: { ...mine.meta, updatedAt: new Date().toISOString() },
   };
 }

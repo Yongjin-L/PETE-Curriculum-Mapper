@@ -17,6 +17,7 @@ import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan } f
 import { CourseList } from "./CourseList";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
 import { ExportDialog } from "./ExportDialog";
+import { useAi } from "./useAi";
 import { useDrive } from "./useDrive";
 import { Coverage } from "./Coverage";
 import { TopicPanel } from "./TopicPanel";
@@ -47,6 +48,7 @@ export function Mapper() {
   }, [plan, loaded]);
 
   const drive = useDrive({ plan, loaded, dispatch, toast: setToast });
+  const ai = useAi(drive);
 
   useEffect(() => {
     if (!toast) return;
@@ -173,14 +175,14 @@ export function Mapper() {
       {tab === "map" ? (
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragName(null)}>
           <main className="workspace">
-            <CourseList plan={plan} lib={lib} dispatch={dispatch} />
+            <CourseList plan={plan} lib={lib} dispatch={dispatch} ai={ai} />
             <TopicPanel plan={plan} lib={lib} dispatch={dispatch} />
           </main>
           <DragOverlay dropAnimation={null}>{dragName && <div className="drag-ghost">{dragName}</div>}</DragOverlay>
         </DndContext>
       ) : (
         <main className="workspace single">
-          <Coverage plan={plan} lib={lib} />
+          <Coverage plan={plan} lib={lib} ai={ai} dispatch={dispatch} />
         </main>
       )}
 

@@ -3,17 +3,19 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { useState, type Dispatch } from "react";
 import type { Library } from "@/lib/dataset";
+import { UploadPlan } from "./AiPanels";
+import type { AiApi } from "./useAi";
 import { parseCourseLines, type Action } from "@/lib/plan";
 import { LEVELS, LEVEL_NAMES, type Course, type Level, type Plan } from "@/lib/types";
 
-export function CourseList({ plan, lib, dispatch }: { plan: Plan; lib: Library; dispatch: Dispatch<Action> }) {
+export function CourseList({ plan, lib, dispatch, ai }: { plan: Plan; lib: Library; dispatch: Dispatch<Action>; ai: AiApi }) {
   return (
     <section className="courses" aria-label="Courses">
       {plan.courses.length === 0 && <Welcome />}
       {plan.courses.map((c, i) => (
         <CourseCard key={c.id} course={c} index={i} total={plan.courses.length} plan={plan} lib={lib} dispatch={dispatch} />
       ))}
-      <AddCourses dispatch={dispatch} hasCourses={plan.courses.length > 0} />
+      <AddCourses dispatch={dispatch} hasCourses={plan.courses.length > 0} ai={ai} plan={plan} />
     </section>
   );
 }
@@ -24,8 +26,8 @@ function Welcome() {
       <h2>Map your program in three steps</h2>
       <ol>
         <li>
-          <strong>Add your courses</strong> below, in the order students take them. You can type them one at a time or paste a
-          whole list.
+          <strong>Add your courses</strong> below, in the order students take them. Type them one at a time, paste a list, or
+          upload your plan of study and let AI read it.
         </li>
         <li>
           <strong>Drag topics</strong> from the topic panel onto each course. A topic can go on as many courses as you like.
@@ -178,8 +180,8 @@ function PlacementChip({
   );
 }
 
-function AddCourses({ dispatch, hasCourses }: { dispatch: Dispatch<Action>; hasCourses: boolean }) {
-  const [mode, setMode] = useState<"one" | "paste">("one");
+function AddCourses({ dispatch, hasCourses, ai, plan }: { dispatch: Dispatch<Action>; hasCourses: boolean; ai: AiApi; plan: Plan }) {
+  const [mode, setMode] = useState<"one" | "paste" | "upload">("one");
   const [num, setNum] = useState("");
   const [name, setName] = useState("");
   const [text, setText] = useState("");
@@ -194,9 +196,13 @@ function AddCourses({ dispatch, hasCourses }: { dispatch: Dispatch<Action>; hasC
         <button className={mode === "paste" ? "on" : ""} onClick={() => setMode("paste")}>
           Paste a list
         </button>
-        <span className="muted small soon">Upload a plan of study (AI): coming soon</span>
+        <button className={mode === "upload" ? "on" : ""} onClick={() => setMode("upload")}>
+          Upload plan of study (AI)
+        </button>
       </div>
-      {mode === "one" ? (
+      {mode === "upload" ? (
+        <UploadPlan ai={ai} plan={plan} dispatch={dispatch} onDone={() => setMode("one")} />
+      ) : mode === "one" ? (
         <form
           className="row"
           onSubmit={(e) => {

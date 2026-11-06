@@ -183,3 +183,27 @@ export function downloadBlob(blob: Blob, filename: string) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export type MdBlock = { kind: "heading" | "bullet" | "number" | "para"; text: string; n?: number };
+
+/** Splits AI Markdown into simple blocks for the PDF and Word exporters (bold/italic markers removed). */
+export function markdownBlocks(md: string): MdBlock[] {
+  const clean = (x: string) => x.replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(^|\s)\*([^*\s][^*]*)\*/g, "$1$2").trim();
+  const out: MdBlock[] = [];
+  let para: string[] = [];
+  const flush = () => {
+    if (para.length) out.push({ kind: "para", text: clean(para.join(" ")) });
+    para = [];
+  };
+  for (const raw of md.replace(/\r\n/g, "\n").split("\n")) {
+    const h = raw.match(/^#{1,4}\s+(.*)$/), ul = raw.match(/^\s*[-*•]\s+(.*)$/), ol = raw.match(/^\s*(\d+)[.)]\s+(.*)$/);
+    if (h) { flush(); out.push({ kind: "heading", text: clean(h[1]) }); }
+    else if (ul) { flush(); out.push({ kind: "bullet", text: clean(ul[1]) }); }
+    else if (ol) { flush(); out.push({ kind: "number", text: clean(ol[2]), n: Number(ol[1]) }); }
+    else if (!raw.trim()) flush();
+    else if (/^\s{2,}/.test(raw) && out.length && out[out.length - 1].kind !== "heading" && !para.length) out[out.length - 1].text += " " + clean(raw);
+    else para.push(raw.trim());
+  }
+  flush();
+  return out;
+}

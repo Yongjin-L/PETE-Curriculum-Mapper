@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { standardCode, type Library } from "@/lib/dataset";
+import type { Dispatch } from "react";
+import type { Action } from "@/lib/plan";
 import { LEVEL_NAMES, LEVELS, type Plan } from "@/lib/types";
+import { AnalysisPanel } from "./AiPanels";
+import type { AiApi } from "./useAi";
 
-export function Coverage({ plan, lib }: { plan: Plan; lib: Library }) {
+export function Coverage({ plan, lib, ai, dispatch }: { plan: Plan; lib: Library; ai: AiApi; dispatch: Dispatch<Action> }) {
   const [showAll, setShowAll] = useState(false);
 
   const cell = new Map(plan.placements.map((p) => [p.topicId + "|" + p.courseId, p.level]));
@@ -81,6 +85,7 @@ export function Coverage({ plan, lib }: { plan: Plan; lib: Library }) {
           </table>
         </div>
       )}
+      <AnalysisPanel ai={ai} plan={plan} dispatch={dispatch} />
     </section>
   );
 }

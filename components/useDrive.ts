@@ -295,6 +295,8 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
       } else if (opts?.autoSave && hasContent(planRef.current)) {
         await createFile();
       } else {
+        // An empty map gets its own Drive file as soon as it has content.
+        if (!hasContent(planRef.current)) autoCreateRef.current = true;
         setStatus("unlinked");
         setMapsOpen(true);
       }
@@ -407,8 +409,12 @@ export function useDrive({ plan, loaded, dispatch, toast }: { plan: Plan; loaded
     await createFile();
   }, [createFile, setLink]);
 
+  /** A valid Google access token for calling this site's AI routes, or null if the user must (re)connect. */
+  const getToken = useCallback(() => validToken()?.accessToken ?? null, []);
+
   return {
     enabled,
+    getToken,
     pickerEnabled: pickerConfigured(),
     user,
     link,

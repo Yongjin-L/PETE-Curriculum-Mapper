@@ -77,13 +77,15 @@ See `dataset/README.md`. Tables: `textbooks`, `chapters`, `topics`, `topic_chapt
 ## 5. AI features
 | Feature | Input | Output | Default limit |
 |---|---|---|---|
-| Plan-of-study import | PDF / DOCX / XLSX / CSV / image (≤ 10 MB) | JSON list of courses → editable review table | 5 per user per day |
+| Plan-of-study import | PDF / DOCX / CSV / TXT / image (≤ 4 MB, Vercel's request limit; Excel → paste or save as CSV) | JSON list of courses → editable review table | 5 per user per day |
 | Map analysis | Courses, placements, levels, standards | Short report: standards coverage, topics never reinforced, sequencing notes (e.g. M before I), suggestions | 10 per user per day |
 
 - Structured output (a JSON schema) for the import, so the parsing is reliable.
 - Uploaded files are processed in memory and **not stored**.
 - A global monthly spending cap is set in the Claude Console as a backstop.
-- Model choice and cost estimates are settled in Phase 5 with current pricing.
+- Model: Claude Opus 5.5 (`AI_MODEL` can switch it), server-side refusal fallback enabled, structured JSON output for the import; low effort for import, medium for analysis.
+- A site-wide daily cap (`AI_GLOBAL_DAILY_LIMIT`, default 100) and `AI_DISABLED` switch sit in front of the Anthropic monthly spend limit.
+- The latest analysis is saved inside the map file (`analysis` field) so it syncs to Drive and can be exported.
 
 ## 6. Export levels
 | Level | Contents |
@@ -115,7 +117,7 @@ Formats: **PDF**, **Word (.docx)**, **JSON** (lossless, re-importable). Users ca
 | 2 | Prototype | Course list, topic panel, drag and drop, I/R/M, local autosave, custom topics, coverage view, JSON open/download | **Done** |
 | 3 | Google | Sign-in, Drive save/open, Picker, conflict merge | **Done** (credentials: docs/GOOGLE_SETUP.md) |
 | 4 | Export | PDF, Word (3 levels), JSON import/export | **Done** |
-| 5 | AI | `/api/parse-plan` with review table, `/api/analyze-map`, rate limits | Next |
+| 5 | AI | `/api/parse-plan` with review table, `/api/analyze-map`, rate limits | **Done** (setup: docs/AI_SETUP.md) |
 | 6 | Launch | Domain, privacy/terms pages, OAuth verification, analytics, faculty pilot | |
 
 ## 10. Running costs (estimate)

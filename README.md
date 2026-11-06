@@ -12,8 +12,8 @@ Created by [Yongjin Lee](https://yongjin.info) · https://curriculum.yongjin.inf
 | 3 | Google sign-in, save/open in Google Drive, sharing, conflict handling | **Done** (needs Google credentials: see [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md)) |
 | 4 | PDF and Word export (Summary / Standard / Full), JSON backup | **Done** |
 | — | Custom domain `curriculum.yongjin.info` | See [docs/CUSTOM_DOMAIN.md](docs/CUSTOM_DOMAIN.md) |
-| 5 | AI: plan-of-study upload, map analysis | Next |
-| 6 | Launch: domain, privacy/terms, OAuth verification, analytics | |
+| 5 | AI: plan-of-study upload with review, map analysis (in exports), daily limits | **Done** (needs API key: see [docs/AI_SETUP.md](docs/AI_SETUP.md)) |
+| 6 | Launch: OAuth verification, analytics, help page, pilot | Next |
 
 See [PLAN.md](PLAN.md) for the full specification.
 

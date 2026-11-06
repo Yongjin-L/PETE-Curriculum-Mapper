@@ -19,7 +19,7 @@ import {
   type ISectionOptions,
 } from "docx";
 import { LEVEL_NAMES, type Level } from "./types";
-import { LEVEL_COLORS, LEVEL_LEGEND, type Report } from "./report";
+import { LEVEL_COLORS, LEVEL_LEGEND, markdownBlocks, type Report } from "./report";
 
 const PRIMARY = "1F4E79";
 const MUTED = "5F6B7A";
@@ -162,8 +162,21 @@ export async function renderDocx(r: Report): Promise<Blob> {
   }
 
   if (r.sections.analysis && r.analysis) {
-    main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 360 }, children: [new TextRun("Analysis")] }));
-    for (const block of r.analysis.split(/\n{2,}/)) main.push(p(block.replace(/^#+\s*/gm, "").replace(/\*\*/g, "")));
+    main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 360 }, children: [new TextRun("AI analysis")] }));
+    main.push(p("Generated with AI from this map. Review it as a starting point for faculty discussion.", { size: 17, color: MUTED }));
+    for (const b of markdownBlocks(r.analysis)) {
+      if (b.kind === "heading") main.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(b.text)] }));
+      else if (b.kind === "para") main.push(p(b.text));
+      else
+        main.push(
+          new Paragraph({
+            indent: { left: 400, hanging: 280 },
+            spacing: { after: 60 },
+            children: [new TextRun({ text: `${b.kind === "number" ? b.n + "." : "•"}\t${b.text}`, size: 20 })],
+            tabStops: [{ type: "left", position: 400 }],
+          })
+        );
+    }
   }
 
   const sections: ISectionOptions[] = [{ properties: { page: { margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } } }, footers: footer(r), children: main }];

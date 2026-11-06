@@ -15,6 +15,7 @@ export function emptyPlan(): Plan {
     customTopics: [],
     customTextbooks: [],
     customChapters: [],
+    analysis: null,
     meta: { createdAt: now, updatedAt: now },
   };
 }
@@ -55,6 +56,7 @@ export type Action =
   | { type: "deleteCustomTopic"; topicId: string }
   | { type: "addCustomTextbook"; textbook: Textbook; chapters: Chapter[] }
   | { type: "deleteCustomTextbook"; textbookId: string }
+  | { type: "setAnalysis"; analysis: Plan["analysis"] }
   | { type: "replacePlan"; plan: Plan };
 
 function reduce(plan: Plan, a: Action): Plan {
@@ -156,6 +158,9 @@ function reduce(plan: Plan, a: Action): Plan {
       };
     }
 
+    case "setAnalysis":
+      return { ...plan, analysis: a.analysis };
+
     case "replacePlan":
       return a.plan;
   }
@@ -228,6 +233,8 @@ export function normalizePlan(input: unknown): Plan {
     });
 
   const meta = (o.meta ?? {}) as Record<string, unknown>;
+  const an = (o.analysis ?? null) as Record<string, unknown> | null;
+  const analysis = an && typeof an.markdown === "string" ? { markdown: an.markdown, createdAt: str(an.createdAt) } : null;
   return {
     ...base,
     datasetVersion: str(o.datasetVersion) || base.datasetVersion,
@@ -243,6 +250,7 @@ export function normalizePlan(input: unknown): Plan {
     })),
     customTextbooks: arr<Textbook>(o.customTextbooks).map((b) => ({ ...b, custom: true })),
     customChapters: arr<Chapter>(o.customChapters).map((c) => ({ ...c, custom: true })),
+    analysis,
     meta: { createdAt: str(meta.createdAt) || base.meta.createdAt, updatedAt: str(meta.updatedAt) || base.meta.updatedAt },
   };
 }

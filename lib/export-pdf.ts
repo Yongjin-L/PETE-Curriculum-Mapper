@@ -3,7 +3,7 @@
 import { jsPDF } from "jspdf";
 import { autoTable, type CellHookData } from "jspdf-autotable";
 import { LEVEL_NAMES } from "./types";
-import { LEVEL_COLORS, LEVEL_LEGEND, type Report } from "./report";
+import { LEVEL_COLORS, LEVEL_LEGEND, markdownBlocks, type Report } from "./report";
 
 const MARGIN = 48;
 const PRIMARY: [number, number, number] = [31, 78, 121];
@@ -36,6 +36,7 @@ export function renderPdf(r: Report): Blob {
   };
   const heading = (text: string, size = 14) => {
     ensure(size + 30);
+    if (y > MARGIN + 1) y += size * 0.7; // breathing room above headings (the text is drawn above its baseline)
     doc.setFont("helvetica", "bold").setFontSize(size).setTextColor(...PRIMARY);
     const lines = doc.splitTextToSize(t(text), pageW() - MARGIN * 2);
     doc.text(lines, MARGIN, y);
@@ -139,8 +140,22 @@ export function renderPdf(r: Report): Blob {
   // ---- Analysis (Phase 5)
   if (r.sections.analysis && r.analysis) {
     ensure(80);
-    heading("Analysis", 15);
-    for (const block of r.analysis.split(/\n{2,}/)) para(block.replace(/^#+\s*/gm, "").replace(/\*\*/g, ""), 9.5);
+    heading("AI analysis", 15);
+    para("Generated with AI from this map. Review it as a starting point for faculty discussion.", 8.5, MUTED);
+    for (const b of markdownBlocks(r.analysis)) {
+      if (b.kind === "heading") heading(b.text, 11.5);
+      else if (b.kind === "para") para(b.text, 9.5);
+      else {
+        // hanging-indent list item
+        const bulletText = b.kind === "number" ? `${b.n}.` : "-";
+        doc.setFont("helvetica", "normal").setFontSize(9.5).setTextColor(30, 36, 48);
+        const lines = doc.splitTextToSize(t(b.text), pageW() - MARGIN * 2 - 16);
+        ensure(lines.length * 9.5 * 1.35);
+        doc.text(bulletText, MARGIN + 2, y);
+        doc.text(lines, MARGIN + 16, y);
+        y += lines.length * 9.5 * 1.35 + 3;
+      }
+    }
   }
 
   // ---- Matrix (landscape pages)
