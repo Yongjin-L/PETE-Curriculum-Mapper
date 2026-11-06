@@ -56,5 +56,5 @@ The default model is Claude Opus 5.5 ($4 per million input tokens, $20 per milli
 With the default site-wide cap of 100 uses a day, the worst case is roughly $10 a day. Your Anthropic monthly spend limit is the hard ceiling. Check real usage at console.anthropic.com → **Usage**.
 
 ## Privacy notes
-- Uploaded files are sent to Anthropic to be read, are not stored by the site. Under Anthropic's commercial API terms, API inputs are not used to train models by default.
+- Uploaded files are sent to Anthropic to be read and are not stored by the site. Under Anthropic's commercial API terms, API inputs are not used to train models by default.
 - Daily counters store only a one-way hash of the person's Google account ID, never the email address.
