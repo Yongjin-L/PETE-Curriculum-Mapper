@@ -28,7 +28,7 @@ export function AccountArea({ drive, onShare }: { drive: DriveApi; onShare: () =
     return (
       <>
         <span className="save-status small">✓ Saved in this browser</span>
-        <button className="btn btn-google" onClick={drive.signIn} title="Sign in to save your maps in your own Google Drive">
+        <button className="btn btn-google" onClick={() => drive.signIn()} title="Sign in to save your maps in your own Google Drive">
           <GoogleG /> Sign in to save to Drive
         </button>
       </>
@@ -38,7 +38,7 @@ export function AccountArea({ drive, onShare }: { drive: DriveApi; onShare: () =
     return (
       <>
         <span className="save-status small">Saved in this browser</span>
-        <button className="btn btn-google" onClick={drive.signIn} title="Your Google session ended. Reconnect to keep saving to Drive.">
+        <button className="btn btn-google" onClick={() => drive.signIn()} title="Your Google session ended. Reconnect to keep saving to Drive.">
           <GoogleG /> Reconnect Drive{user ? ` (${user.email})` : ""}
         </button>
       </>
