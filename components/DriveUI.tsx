@@ -214,7 +214,7 @@ export function MyMapsDialog({ drive, plan, onNewMap }: { drive: DriveApi; plan:
 }
 
 export function ShareDialog({ drive, onClose }: { drive: DriveApi; onClose: () => void }) {
-  const site = typeof window !== "undefined" ? window.location.origin : "";
+  const site = typeof window !== "undefined" ? window.location.origin + "/map" : "";
   const message = `I've shared our curriculum map "${drive.link?.name.replace(/\.petemap\.json$/, "")}" with you. To open it: go to ${site}, sign in with Google, open the account menu → "My maps in Drive…" → "Open a map shared with me…", and pick the file.`;
   const [copied, setCopied] = useState(false);
   return (

@@ -22,6 +22,7 @@ import { useAi } from "./useAi";
 import { useDrive } from "./useDrive";
 import { Coverage } from "./Coverage";
 import { ComponentPanel } from "./ComponentPanel";
+import { Logo } from "./Logo";
 
 type Tab = "map" | "coverage";
 
@@ -130,15 +131,10 @@ export function Mapper() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand">
-          <span className="logo" aria-hidden>
-            ◧
-          </span>
-          <div>
-            <h1>PETE Curriculum Mapper</h1>
-            <span className="muted small">Map the SHAPE Initial PETE Standards across your program</span>
-          </div>
-        </div>
+        <a href="/" className="brand" title="PETE Curriculum Mapper home">
+          <Logo size={36} />
+          <h1 className="sr-only">PETE Curriculum Mapper</h1>
+        </a>
         <div className="actions">
           {saveOk ? (
             <AccountArea

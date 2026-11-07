@@ -12,7 +12,7 @@ export default function Help() {
   return (
     <main className="doc">
       <p>
-        <Link href="/">← Back to the mapper</Link>
+        <Link href="/map">← Back to the mapper</Link>
       </p>
       <h1>Help</h1>
       <p>
