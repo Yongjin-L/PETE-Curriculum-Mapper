@@ -16,11 +16,9 @@ const FORMATS: { id: Format; label: string; note: string }[] = [
 ];
 
 const SECTION_LABELS: { key: keyof Sections; label: string }[] = [
-  { key: "chapters", label: "Linked textbook chapters for each topic" },
-  { key: "standards", label: "SHAPE standards for each topic" },
-  { key: "references", label: "Reference list of textbooks" },
+  { key: "wording", label: "Full SHAPE wording for each component" },
   { key: "coverage", label: "Standards coverage table" },
-  { key: "matrix", label: "Topics × courses matrix (landscape page)" },
+  { key: "matrix", label: "Components × courses matrix (landscape page)" },
   { key: "analysis", label: "AI analysis" },
 ];
 
@@ -128,7 +126,7 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
             <legend>Include</legend>
             <label className="check">
               <input type="checkbox" checked disabled />
-              <span>Program details and each course&apos;s topics with I/R/M levels</span>
+              <span>Program details and each course&apos;s SHAPE components with I/R/M levels</span>
             </label>
             {SECTION_LABELS.map((s) => {
               const unavailable = s.key === "analysis" && !plan.analysis;
@@ -153,7 +151,7 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
 
       {format === "json" && (
         <p className="small muted">
-          A JSON file contains everything in this map, including your custom topics and books. Use <b>Open JSON</b> to load it again later or on
+          A JSON file contains everything in this map, including the AI analysis if you ran one. Use <b>Open JSON</b> to load it again later or on
           another computer.
         </p>
       )}

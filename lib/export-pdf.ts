@@ -72,32 +72,28 @@ export function renderPdf(r: Report): Blob {
     y += 18;
   }
   para(
-    `Generated ${r.generated}  |  ${r.stats.courses} courses  |  ${r.stats.topicsMapped} topics mapped  |  ${r.stats.placements} placements ` +
+    `Generated ${r.generated}  |  ${r.stats.courses} courses  |  ${r.stats.componentsMapped} of ${r.stats.componentsTotal} SHAPE components mapped  |  ${r.stats.placements} placements ` +
       `(I ${r.stats.byLevel.I}, R ${r.stats.byLevel.R}, M ${r.stats.byLevel.M})`,
     9,
     MUTED
   );
   para(`Levels: ${LEVEL_LEGEND}`, 9, MUTED);
+  para(`Standards: ${r.source}`, 9, MUTED);
   y += 6;
 
   // ---- Courses
-  heading("Courses and topics", 15);
-  const detail = r.sections.chapters || r.sections.standards;
+  heading("Courses and SHAPE components", 15);
+  const detail = r.sections.wording;
   for (const c of r.courses) {
     ensure(90); // keep the course heading with the start of its table
     heading(c.heading, 12);
-    if (c.topics.length === 0) {
-      para("No topics mapped yet.", 9, MUTED);
+    if (c.items.length === 0) {
+      para("No components mapped yet.", 9, MUTED);
       y += 4;
       continue;
     }
-    const head = ["Topic", "Level", ...(r.sections.chapters ? ["Chapters"] : []), ...(r.sections.standards ? ["SHAPE standards"] : [])];
-    const body = c.topics.map((tp) => [
-      t(tp.name + (tp.custom ? " (custom)" : "")),
-      `${tp.level} - ${LEVEL_NAMES[tp.level]}`,
-      ...(r.sections.chapters ? [t(tp.chapters.join("\n") || "-")] : []),
-      ...(r.sections.standards ? [t(tp.standards.join("\n") || "-")] : []),
-    ]);
+    const head = ["Component", "Level", ...(detail ? ["SHAPE wording"] : [])];
+    const body = c.items.map((it) => [t(`${it.code}  ${it.label}`), `${it.level} - ${LEVEL_NAMES[it.level]}`, ...(detail ? [t(it.text || "-")] : [])]);
     autoTable(doc, {
       startY: y,
       head: [head],
@@ -105,9 +101,7 @@ export function renderPdf(r: Report): Blob {
       margin: { left: MARGIN, right: MARGIN },
       styles: { font: "helvetica", fontSize: detail ? 8.5 : 9.5, cellPadding: 4, valign: "top", lineColor: [221, 225, 231], lineWidth: 0.5 },
       headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: "bold" },
-      columnStyles: detail
-        ? { 0: { cellWidth: 130 }, 1: { cellWidth: 72 } }
-        : { 1: { cellWidth: 110 } },
+      columnStyles: detail ? { 0: { cellWidth: 150 }, 1: { cellWidth: 72 } } : { 1: { cellWidth: 110 } },
       didParseCell: (d) => levelCell(d, 1),
     });
     y = lastY() + 14;
@@ -117,10 +111,10 @@ export function renderPdf(r: Report): Blob {
   if (r.sections.coverage) {
     ensure(120);
     heading("SHAPE America standards coverage", 15);
-    para("Related topics are those linked to the standard in the data set. Levels count placements of those topics across courses.", 9, MUTED);
+    para("Components mapped = components placed on at least one course. Levels count placements across courses.", 9, MUTED);
     autoTable(doc, {
       startY: y,
-      head: [["Standard", "Related topics mapped", "Courses", "I", "R", "M"]],
+      head: [["Standard", "Components mapped", "Courses", "I", "R", "M"]],
       body: r.coverage.map((s) => [t(`${s.code}: ${s.label}`), `${s.mapped} of ${s.total}`, String(s.courses), String(s.levels.I), String(s.levels.R), String(s.levels.M)]),
       margin: { left: MARGIN, right: MARGIN },
       styles: { fontSize: 9, cellPadding: 4, lineColor: [221, 225, 231], lineWidth: 0.5 },
@@ -128,13 +122,6 @@ export function renderPdf(r: Report): Blob {
       columnStyles: { 1: { halign: "center", cellWidth: 90 }, 2: { halign: "center", cellWidth: 52 }, 3: { halign: "center", cellWidth: 32 }, 4: { halign: "center", cellWidth: 32 }, 5: { halign: "center", cellWidth: 32 } },
     });
     y = lastY() + 16;
-  }
-
-  // ---- References
-  if (r.sections.references && r.references.length) {
-    ensure(80);
-    heading("References", 15);
-    for (const ref of r.references) para(ref, 9.5);
   }
 
   // ---- Analysis (Phase 5)
@@ -159,16 +146,19 @@ export function renderPdf(r: Report): Blob {
   }
 
   // ---- Matrix (landscape pages)
-  if (r.sections.matrix && r.matrix.rows.length) {
+  if (r.sections.matrix && r.matrix.groups.length) {
     doc.addPage("letter", "landscape");
     y = MARGIN;
-    heading("Topics x courses matrix", 15);
+    heading("SHAPE components x courses matrix", 15);
     para(`Levels: ${LEVEL_LEGEND}`, 9, MUTED);
     const many = r.matrix.columns.length > 10;
     autoTable(doc, {
       startY: y,
-      head: [["Topic", ...r.matrix.columns.map(t)]],
-      body: r.matrix.rows.map((row) => [t(row.topic), ...row.cells]),
+      head: [["Component", ...r.matrix.columns.map(t)]],
+      body: r.matrix.groups.flatMap((g) => [
+        [{ content: t(g.standard), colSpan: r.matrix.columns.length + 1, styles: { halign: "left" as const, fontStyle: "bold" as const, fillColor: [236, 241, 247] as [number, number, number], textColor: PRIMARY } }],
+        ...g.rows.map((row) => [t(`${row.code}  ${row.label}`), ...row.cells]),
+      ]),
       margin: { left: MARGIN, right: MARGIN },
       styles: { fontSize: many ? 7 : 8.5, cellPadding: 3, halign: "center", valign: "middle", lineColor: [221, 225, 231], lineWidth: 0.5 },
       headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: many ? 6.5 : 8 },
@@ -176,7 +166,7 @@ export function renderPdf(r: Report): Blob {
       horizontalPageBreak: true,
       horizontalPageBreakRepeat: 0,
       didParseCell: (d) => {
-        if (d.section === "body" && d.column.index > 0) levelCell(d, d.column.index);
+        if (d.section === "body" && d.column.index > 0 && d.row.cells[0]?.colSpan === 1) levelCell(d, d.column.index);
       },
     });
     y = lastY() + 12;
@@ -191,7 +181,7 @@ export function renderPdf(r: Report): Blob {
     doc.setPage(i);
     doc.setFont("helvetica", "normal").setFontSize(7.5).setTextColor(...MUTED);
     const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight();
-    doc.text(t(`${r.credit}  |  Data set ${r.datasetVersion}`), MARGIN, h - 24);
+    doc.text(t(r.credit), MARGIN, h - 24);
     doc.text(`Page ${i} of ${pages}`, w - MARGIN, h - 24, { align: "right" });
   }
 

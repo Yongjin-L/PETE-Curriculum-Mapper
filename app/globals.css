@@ -418,3 +418,31 @@ a.btn { color: var(--text); text-decoration: none; display: inline-block; }
 .stat-tiles { margin: 14px 0 18px; }
 .stat-big { font-size: 1.8rem; font-weight: 700; margin: 4px 0; }
 .stats-table td { font-variant-numeric: tabular-nums; }
+
+/* Standards components */
+.comp-code { font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; margin-right: 2px; }
+.std-group { display: flex; flex-direction: column; gap: 6px; }
+.std-group + .std-group { margin-top: 8px; }
+.std-group-title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin: 4px 2px 0; }
+.topics-head > select { width: 100%; font-size: 0.85rem; }
+.matrix-group th { background: var(--surface-2) !important; font-weight: 700; color: var(--primary); }
+.matrix-group td { background: var(--surface-2); }
+.unmapped-row th { color: var(--muted); }
+.topics-foot p { margin: 0; }
+.sugg { display: flex; flex-wrap: wrap; gap: 4px; }
+.sugg-chip {
+  display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-left-width: 3px;
+  border-radius: 6px; padding: 1px 2px 1px 6px; font-size: 0.8rem; background: var(--surface);
+}
+.sugg-chip.level-I { border-left-color: var(--lvl-I); }
+.sugg-chip.level-R { border-left-color: var(--lvl-R); }
+.sugg-chip.level-M { border-left-color: var(--lvl-M); }
+.sugg-x { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 3px; font-size: 0.7rem; }
+.sugg-x:hover { color: var(--danger); }
+.review-table td { vertical-align: top; }
+.review-table td:nth-child(3) { min-width: 180px; }
+.review-table td:nth-child(4) { min-width: 220px; }
+.term { margin-top: 2px; }
+.steps-inline { margin: 8px 0 14px; }
+.welcome .upload { margin-top: 6px; }
+.suggest-bar { border: 1px solid var(--border); }

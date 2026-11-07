@@ -1,49 +1,24 @@
-// ---- Master data set (public/data/dataset.json, built by scripts/build-dataset.mjs)
-
-export interface Textbook {
-  textbook_id: string;
-  title: string;
-  authors: string;
-  edition?: number | string | null;
-  year?: number | string | null;
-  publisher?: string;
-  isbn?: string;
-  custom?: boolean;
-}
-
-export interface Chapter {
-  chapter_id: string;
-  textbook_id: string;
-  chapter_no: number | string | null;
-  chapter_title: string;
-  custom?: boolean;
-}
+// ---- Data set (public/data/dataset.json, built from dataset/PETE_dataset_template.xlsx)
 
 export interface Standard {
-  standard_id: string;
-  standard_no: string;
-  component?: string;
-  short_label: string;
+  standard_id: string; // S1-S6
+  standard_no: string; // "1"-"6"
+  title: string;
+  description: string;
 }
 
-export type Relevance = "primary" | "secondary";
-
-export interface Topic {
-  topic_id: string;
-  topic_name: string;
-  description?: string;
-  keywords: string[];
-  chapters: { chapter_id: string; relevance: Relevance | string }[];
-  standards: string[];
-  custom?: boolean;
+export interface Component {
+  component_id: string; // e.g. "3.b"
+  standard_id: string;
+  label: string; // short name shown on the map
+  text: string; // full component statement
 }
 
 export interface Dataset {
   datasetVersion: string;
-  textbooks: Textbook[];
-  chapters: Chapter[];
+  source: string;
   standards: Standard[];
-  topics: Topic[];
+  components: Component[];
 }
 
 // ---- User plan (saved in the browser now; Google Drive in Phase 3)
@@ -66,7 +41,7 @@ export interface Course {
 
 export interface Placement {
   courseId: string;
-  topicId: string;
+  topicId: string; // component ID, e.g. "3.b" (field name kept for saved maps)
   level: Level;
 }
 
@@ -76,9 +51,6 @@ export interface Plan {
   program: { university: string; name: string };
   courses: Course[]; // array order = program order
   placements: Placement[];
-  customTopics: Topic[];
-  customTextbooks: Textbook[];
-  customChapters: Chapter[];
   analysis: Analysis | null; // latest AI analysis, if any
   meta: { createdAt: string; updatedAt: string };
 }

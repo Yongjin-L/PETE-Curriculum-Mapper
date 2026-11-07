@@ -14,12 +14,12 @@ export default function Privacy() {
 
       <p>
         PETE Curriculum Mapper (&quot;the Service&quot;) is a free tool created and operated by Yongjin Lee (
-        <a href="https://yongjin.info">yongjin.info</a>) to help physical education teacher education faculty map curriculum topics to courses.
+        <a href="https://yongjin.info">yongjin.info</a>) to help physical education teacher education faculty map the SHAPE America standards to the courses of their programs.
       </p>
 
       <h2>Information you enter</h2>
       <p>
-        Program details, courses, topic placements and any custom topics or books you create are stored in your own web browser
+        Program details, courses and the standards components placed on them are stored in your own web browser
         (local storage). If you sign in with Google, they are also saved as a file in your own Google Drive. The Service does not operate a
         database of your maps and does not keep copies of them on its servers.
       </p>

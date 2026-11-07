@@ -1,54 +1,40 @@
 import raw from "@/public/data/dataset.json";
-import type { Chapter, Dataset, Plan, Standard, Textbook, Topic } from "./types";
+import type { Component, Dataset, Standard } from "./types";
 
-export const masterDataset = raw as unknown as Dataset;
+export const dataset = raw as unknown as Dataset;
+export const DATASET_SOURCE = dataset.source;
 
-/** Master data merged with the user's private custom items, plus lookups. */
+/** Standards and components with lookups. */
 export interface Library {
-  topics: Topic[];
-  textbooks: Textbook[];
   standards: Standard[];
-  topicById: Map<string, Topic>;
-  chapterById: Map<string, Chapter>;
-  textbookById: Map<string, Textbook>;
+  components: Component[];
+  componentById: Map<string, Component>;
   standardById: Map<string, Standard>;
-  chaptersByTextbook: Map<string, Chapter[]>;
+  componentsByStandard: Map<string, Component[]>;
 }
 
-export function buildLibrary(plan: Plan): Library {
-  const topics = [...masterDataset.topics, ...plan.customTopics];
-  const textbooks = [...masterDataset.textbooks, ...plan.customTextbooks];
-  const chapters = [...masterDataset.chapters, ...plan.customChapters];
-  const standards = masterDataset.standards;
+let cached: Library | null = null;
 
-  const chaptersByTextbook = new Map<string, Chapter[]>();
-  for (const c of chapters) {
-    const list = chaptersByTextbook.get(c.textbook_id) ?? [];
+export function getLibrary(): Library {
+  if (cached) return cached;
+  const componentsByStandard = new Map<string, Component[]>();
+  for (const c of dataset.components) {
+    const list = componentsByStandard.get(c.standard_id) ?? [];
     list.push(c);
-    chaptersByTextbook.set(c.textbook_id, list);
+    componentsByStandard.set(c.standard_id, list);
   }
-  for (const list of chaptersByTextbook.values())
-    list.sort((a, b) => Number(a.chapter_no) - Number(b.chapter_no));
-
-  return {
-    topics,
-    textbooks,
-    standards,
-    topicById: new Map(topics.map((t) => [t.topic_id, t])),
-    chapterById: new Map(chapters.map((c) => [c.chapter_id, c])),
-    textbookById: new Map(textbooks.map((b) => [b.textbook_id, b])),
-    standardById: new Map(standards.map((s) => [s.standard_id, s])),
-    chaptersByTextbook,
+  cached = {
+    standards: dataset.standards,
+    components: dataset.components,
+    componentById: new Map(dataset.components.map((c) => [c.component_id, c])),
+    standardById: new Map(dataset.standards.map((s) => [s.standard_id, s])),
+    componentsByStandard,
   };
+  return cached;
 }
 
-export function standardCode(s: Standard): string {
-  return s.component ? `${s.standard_no}.${s.component}` : `Std ${s.standard_no}`;
-}
+/** "3.b Progressive, sequential content" */
+export const componentTitle = (c: Component) => `${c.component_id} ${c.label}`;
 
-export function chapterLabel(lib: Library, chapterId: string): string {
-  const ch = lib.chapterById.get(chapterId);
-  if (!ch) return chapterId;
-  const book = lib.textbookById.get(ch.textbook_id);
-  return `${book?.title ?? ch.textbook_id}, Ch. ${ch.chapter_no}: ${ch.chapter_title}`;
-}
+/** "Standard 3: Planning and Implementation" */
+export const standardTitle = (s: Standard) => `Standard ${s.standard_no}: ${s.title}`;

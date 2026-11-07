@@ -21,11 +21,14 @@ export const AI_CONFIG = {
   limits: {
     parse: num(process.env.AI_DAILY_UPLOADS, 5),
     analyze: num(process.env.AI_DAILY_ANALYSES, 10),
+    suggest: num(process.env.AI_DAILY_SUGGESTIONS, 5),
     global: num(process.env.AI_GLOBAL_DAILY_LIMIT, 100),
   },
 };
 
-export type Feature = "parse" | "analyze";
+export type Feature = "parse" | "analyze" | "suggest";
+
+const FEATURE_NAMES: Record<Feature, string> = { parse: "plan-of-study uploads", analyze: "AI analyses", suggest: "AI matching suggestions" };
 
 /** Why AI is unavailable, or null when it is ready. */
 export function aiUnavailableReason(): string | null {
@@ -123,7 +126,7 @@ export async function consume(feature: Feature, sub: string): Promise<{ usage: U
     throw new HttpError(
       429,
       mine > limit
-        ? `You've reached today's limit of ${limit} ${feature === "parse" ? "plan-of-study uploads" : "AI analyses"}. The limit resets at midnight UTC.`
+        ? `You've reached today's limit of ${limit} ${FEATURE_NAMES[feature]}. The limit resets at midnight UTC.`
         : "The site has reached its AI usage limit for today. Please try again tomorrow."
     );
   }
@@ -131,9 +134,10 @@ export async function consume(feature: Feature, sub: string): Promise<{ usage: U
 }
 
 export async function usageFor(sub: string): Promise<Record<Feature, Usage>> {
-  const [p, a] = await get([keysFor("parse", sub)[0], keysFor("analyze", sub)[0]]);
-  const u = (used: number, limit: number) => ({ used, limit, remaining: Math.max(0, limit - used) });
-  return { parse: u(p, AI_CONFIG.limits.parse), analyze: u(a, AI_CONFIG.limits.analyze) };
+  const features: Feature[] = ["parse", "analyze", "suggest"];
+  const used = await get(features.map((f) => keysFor(f, sub)[0]));
+  const u = (n: number, limit: number) => ({ used: n, limit, remaining: Math.max(0, limit - n) });
+  return Object.fromEntries(features.map((f, i) => [f, u(used[i], AI_CONFIG.limits[f])])) as Record<Feature, Usage>;
 }
 
 export function errorResponse(e: unknown): Response {

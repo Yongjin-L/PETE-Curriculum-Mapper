@@ -12,7 +12,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Dispatch } from "react";
-import { buildLibrary } from "@/lib/dataset";
+import { getLibrary } from "@/lib/dataset";
 import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan, type Action } from "@/lib/plan";
 import { track, trackInstitution } from "@/lib/track";
 import { CourseList } from "./CourseList";
@@ -21,7 +21,7 @@ import { ExportDialog } from "./ExportDialog";
 import { useAi } from "./useAi";
 import { useDrive } from "./useDrive";
 import { Coverage } from "./Coverage";
-import { TopicPanel } from "./TopicPanel";
+import { ComponentPanel } from "./ComponentPanel";
 
 type Tab = "map" | "coverage";
 
@@ -39,9 +39,7 @@ export function Mapper() {
       if (n) track(a.source === "ai" ? "courses_added_ai" : a.source === "paste" ? "courses_added_paste" : "courses_added_manual", n);
     } else if (a.type === "placeTopic") {
       if (!p.placements.some((x) => x.courseId === a.courseId && x.topicId === a.topicId)) track("topic_placed");
-    } else if (a.type === "saveCustomTopic") {
-      if (!p.customTopics.some((t) => t.topic_id === a.topic.topic_id)) track("custom_topic_added");
-    } else if (a.type === "addCustomTextbook") track("custom_book_added");
+    }
     rawDispatch(a);
   }, []);
   const [loaded, setLoaded] = useState(false);
@@ -53,7 +51,7 @@ export function Mapper() {
   const [exportOpen, setExportOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const lib = useMemo(() => buildLibrary(plan), [plan]);
+  const lib = getLibrary();
 
   // Load the saved plan once, then autosave on every change.
   useEffect(() => {
@@ -138,7 +136,7 @@ export function Mapper() {
           </span>
           <div>
             <h1>PETE Curriculum Mapper</h1>
-            <span className="muted small">Map key topics across your PETE program</span>
+            <span className="muted small">Map the SHAPE Initial PETE Standards across your program</span>
           </div>
         </div>
         <div className="actions">
@@ -209,7 +207,7 @@ export function Mapper() {
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragName(null)}>
           <main className="workspace">
             <CourseList plan={plan} lib={lib} dispatch={dispatch} ai={ai} />
-            <TopicPanel plan={plan} lib={lib} dispatch={dispatch} />
+            <ComponentPanel plan={plan} lib={lib} dispatch={dispatch} />
           </main>
           <DragOverlay dropAnimation={null}>{dragName && <div className="drag-ghost">{dragName}</div>}</DragOverlay>
         </DndContext>

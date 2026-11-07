@@ -1,233 +1,194 @@
 {
   "datasetVersion": "2026-11-06",
-  "textbooks": [
-    {
-      "textbook_id": "TB01",
-      "title": "SAMPLE Textbook A (replace)",
-      "authors": "Author, A.; Author, B.",
-      "edition": 1,
-      "year": 2020,
-      "publisher": "Publisher",
-      "isbn": ""
-    },
-    {
-      "textbook_id": "TB02",
-      "title": "SAMPLE Textbook B (replace)",
-      "authors": "Author, C.",
-      "edition": 2,
-      "year": 2022,
-      "publisher": "Publisher",
-      "isbn": ""
-    }
-  ],
-  "chapters": [
-    {
-      "chapter_id": "TB01-C01",
-      "textbook_id": "TB01",
-      "chapter_no": 1,
-      "chapter_title": "SAMPLE chapter title (replace)"
-    },
-    {
-      "chapter_id": "TB01-C02",
-      "textbook_id": "TB01",
-      "chapter_no": 2,
-      "chapter_title": "SAMPLE chapter title (replace)"
-    },
-    {
-      "chapter_id": "TB01-C03",
-      "textbook_id": "TB01",
-      "chapter_no": 3,
-      "chapter_title": "SAMPLE chapter title (replace)"
-    },
-    {
-      "chapter_id": "TB02-C01",
-      "textbook_id": "TB02",
-      "chapter_no": 1,
-      "chapter_title": "SAMPLE chapter title (replace)"
-    },
-    {
-      "chapter_id": "TB02-C02",
-      "textbook_id": "TB02",
-      "chapter_no": 2,
-      "chapter_title": "SAMPLE chapter title (replace)"
-    }
-  ],
+  "source": "SHAPE America (2017). National Standards for Initial Physical Education Teacher Education.",
   "standards": [
     {
       "standard_id": "S1",
       "standard_no": "1",
-      "component": "",
-      "short_label": "Content and foundational knowledge"
+      "title": "Content and Foundational Knowledge",
+      "description": "Physical education candidates demonstrate an understanding of common and specialized content, and scientific and theoretical foundations for the delivery of an effective preK-12 physical education program."
     },
     {
       "standard_id": "S2",
       "standard_no": "2",
-      "component": "",
-      "short_label": "Skillfulness and health-related fitness"
+      "title": "Skillfulness and Health-Related Fitness",
+      "description": "Physical education candidates are physically literate individuals who can demonstrate skillful performance in physical education content areas and health-enhancing levels of fitness."
     },
     {
       "standard_id": "S3",
       "standard_no": "3",
-      "component": "",
-      "short_label": "Planning and implementation"
+      "title": "Planning and Implementation",
+      "description": "Physical education candidates apply content and foundational knowledge to plan and implement developmentally appropriate learning experiences aligned with local, state and/or SHAPE America's National Standards and Grade-Level Outcomes for K-12 Physical Education through the effective use of resources, accommodations and/or modifications, technology and metacognitive strategies to address the diverse needs of all students."
     },
     {
       "standard_id": "S4",
       "standard_no": "4",
-      "component": "",
-      "short_label": "Instructional delivery and management"
+      "title": "Instructional Delivery and Management",
+      "description": "Physical education candidates engage students in meaningful learning experiences through effective use of pedagogical skills. They use communication, feedback, technology, and instructional and managerial skills to enhance student learning."
     },
     {
       "standard_id": "S5",
       "standard_no": "5",
-      "component": "",
-      "short_label": "Assessment of student learning"
+      "title": "Assessment of Student Learning",
+      "description": "Physical education candidates select and implement appropriate assessments to monitor students' progress and guide decision making related to instruction and learning."
     },
     {
       "standard_id": "S6",
       "standard_no": "6",
-      "component": "",
-      "short_label": "Professional responsibility"
+      "title": "Professional Responsibility",
+      "description": "Physical education candidates demonstrate behaviors essential to becoming effective professionals. They exhibit professional ethics and culturally competent practices; seek opportunities for continued professional development; and demonstrate knowledge of promotion/advocacy strategies for physical education and expanded physical activity opportunities that support the development of physically literate individuals."
     }
   ],
-  "topics": [
+  "components": [
     {
-      "topic_id": "T001",
-      "topic_name": "Class management and routines",
-      "description": "Establishing protocols, transitions, and signals for an efficient learning environment",
-      "keywords": [
-        "protocols",
-        "transitions",
-        "signals"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB01-C02",
-          "relevance": "primary"
-        }
-      ],
-      "standards": [
-        "S4"
-      ]
+      "component_id": "1.a",
+      "standard_id": "S1",
+      "label": "Common content knowledge",
+      "text": "Describe and apply common content knowledge for teaching preK-12 physical education."
     },
     {
-      "topic_id": "T002",
-      "topic_name": "Motor skill development",
-      "description": "Stages and progressions of fundamental movement skill acquisition",
-      "keywords": [
-        "locomotor",
-        "manipulative",
-        "progressions"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB01-C03",
-          "relevance": "primary"
-        },
-        {
-          "chapter_id": "TB02-C01",
-          "relevance": "secondary"
-        }
-      ],
-      "standards": [
-        "S1",
-        "S2"
-      ]
+      "component_id": "1.b",
+      "standard_id": "S1",
+      "label": "Specialized content knowledge",
+      "text": "Describe and apply specialized content knowledge for teaching preK-12 physical education."
     },
     {
-      "topic_id": "T003",
-      "topic_name": "Lesson planning",
-      "description": "Writing objectives, sequencing tasks, and aligning activities to outcomes",
-      "keywords": [
-        "objectives",
-        "task progression"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB01-C01",
-          "relevance": "primary"
-        }
-      ],
-      "standards": [
-        "S3"
-      ]
+      "component_id": "1.c",
+      "standard_id": "S1",
+      "label": "Physiological & biomechanical concepts",
+      "text": "Describe and apply physiological and biomechanical concepts related to skillful movement, physical activity and fitness for preK-12 students."
     },
     {
-      "topic_id": "T004",
-      "topic_name": "Assessment of student learning",
-      "description": "Formative and summative assessment in physical education",
-      "keywords": [
-        "rubrics",
-        "formative",
-        "summative"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB02-C02",
-          "relevance": "primary"
-        }
-      ],
-      "standards": [
-        "S5"
-      ]
+      "component_id": "1.d",
+      "standard_id": "S1",
+      "label": "Motor learning & behavior change",
+      "text": "Describe and apply motor learning and behavior-change/psychological principles related to skillful movement, physical activity and fitness for preK-12 students."
     },
     {
-      "topic_id": "T005",
-      "topic_name": "Health-related fitness",
-      "description": "Components of fitness and fitness education",
-      "keywords": [
-        "cardiorespiratory",
-        "flexibility",
-        "strength"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB02-C01",
-          "relevance": "primary"
-        }
-      ],
-      "standards": [
-        "S2"
-      ]
+      "component_id": "1.e",
+      "standard_id": "S1",
+      "label": "Motor development",
+      "text": "Describe and apply motor development theory and principles related to fundamental motor skills, skillful movement, physical activity and fitness for preK-12 students."
     },
     {
-      "topic_id": "T006",
-      "topic_name": "Inclusion and adapted physical education",
-      "description": "Modifying instruction for learners with diverse needs",
-      "keywords": [
-        "adaptation",
-        "differentiation",
-        "IEP"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB01-C03",
-          "relevance": "secondary"
-        }
-      ],
-      "standards": [
-        "S3",
-        "S4"
-      ]
+      "component_id": "1.f",
+      "standard_id": "S1",
+      "label": "Historical, philosophical & social perspectives",
+      "text": "Describe the historical, philosophical and social perspectives of physical education issues and legislation."
     },
     {
-      "topic_id": "T007",
-      "topic_name": "Professional ethics and advocacy",
-      "description": "Ethical conduct, reflection, and advocating for quality PE",
-      "keywords": [
-        "reflection",
-        "advocacy",
-        "ethics"
-      ],
-      "chapters": [
-        {
-          "chapter_id": "TB01-C01",
-          "relevance": "secondary"
-        }
-      ],
-      "standards": [
-        "S6"
-      ]
+      "component_id": "2.a",
+      "standard_id": "S2",
+      "label": "Motor skill competency & content areas",
+      "text": "Demonstrate competency in all fundamental motor skills, as well as skillful performance in a minimum of four physical education content areas (e.g., games and sports, aquatics, dance and rhythmic activities, fitness activities, outdoor pursuits, individual-performance activities)."
+    },
+    {
+      "component_id": "2.b",
+      "standard_id": "S2",
+      "label": "Health-enhancing fitness",
+      "text": "Achieve and maintain a health-enhancing level of fitness throughout the program."
+    },
+    {
+      "component_id": "3.a",
+      "standard_id": "S3",
+      "label": "Aligned short- & long-term objectives",
+      "text": "Plan and implement appropriate (e.g., measureable, developmentally appropriate, performance-based) short- and long-term plan objectives that are aligned with local, state and/or SHAPE America's National Standards and Grade-Level Outcomes for K-12 Physical Education."
+    },
+    {
+      "component_id": "3.b",
+      "standard_id": "S3",
+      "label": "Progressive, sequential content",
+      "text": "Plan and implement progressive and sequential content that aligns with short- and long-term plan objectives and that addresses the diverse needs of all students."
+    },
+    {
+      "component_id": "3.c",
+      "standard_id": "S3",
+      "label": "Resources & equitable experiences",
+      "text": "Plan for and manage resources to provide active, fair and equitable learning experiences."
+    },
+    {
+      "component_id": "3.d",
+      "standard_id": "S3",
+      "label": "Individualized instruction & accommodations",
+      "text": "Plan and implement individualized instruction for diverse student needs, adding specific accommodations and/or modifications for all students."
+    },
+    {
+      "component_id": "3.e",
+      "standard_id": "S3",
+      "label": "Technology in learning experiences",
+      "text": "Plan and implement learning experiences that require students to use technology appropriately in meeting one or more short- and long-term plan objective(s)."
+    },
+    {
+      "component_id": "3.f",
+      "standard_id": "S3",
+      "label": "Metacognitive strategies",
+      "text": "Plan and implement learning experiences that engage students in using metacognitive strategies appropriately to analyze their own performance results."
+    },
+    {
+      "component_id": "4.a",
+      "standard_id": "S4",
+      "label": "Respectful communication",
+      "text": "Demonstrate verbal and nonverbal communication skills that convey respect and sensitivity across all learning experiences."
+    },
+    {
+      "component_id": "4.b",
+      "standard_id": "S4",
+      "label": "Demonstrations, explanations & cues",
+      "text": "Implement demonstrations, explanations and instructional cues that are aligned with short- and long-term plan objectives."
+    },
+    {
+      "component_id": "4.c",
+      "standard_id": "S4",
+      "label": "Adjusting instruction",
+      "text": "Evaluate the changing dynamics of the learning environment and adjust instructional tasks as needed to further student progress."
+    },
+    {
+      "component_id": "4.d",
+      "standard_id": "S4",
+      "label": "Routines & behavior management",
+      "text": "Implement transitions, routines and positive behavior management to create and maintain a safe, supportive and engaging learning environment."
+    },
+    {
+      "component_id": "4.e",
+      "standard_id": "S4",
+      "label": "Skill analysis & feedback",
+      "text": "Analyze motor skills and performance concepts through multiple means (e.g., visual observation, technology) in order to provide specific, congruent feedback to enhance student learning."
+    },
+    {
+      "component_id": "5.a",
+      "standard_id": "S5",
+      "label": "Authentic, formal assessments",
+      "text": "Select or create authentic, formal assessments that measure student attainment of short- and long-term objectives."
+    },
+    {
+      "component_id": "5.b",
+      "standard_id": "S5",
+      "label": "Formative & summative assessment",
+      "text": "Implement formative assessments that monitor student learning before and throughout the long-term plan, as well as summative assessments that evaluate student learning upon completion of the long-term plan."
+    },
+    {
+      "component_id": "5.c",
+      "standard_id": "S5",
+      "label": "Reflective cycle",
+      "text": "Implement a reflective cycle to guide decision making specific to candidate performance, student learning, and short- and long-term plan objectives."
+    },
+    {
+      "component_id": "6.a",
+      "standard_id": "S6",
+      "label": "Professional ethics & cultural competence",
+      "text": "Engage in behavior that reflects professional ethics, practice and cultural competence."
+    },
+    {
+      "component_id": "6.b",
+      "standard_id": "S6",
+      "label": "Professional growth & collaboration",
+      "text": "Engage in continued professional growth and collaboration in schools and/or professional organizations."
+    },
+    {
+      "component_id": "6.c",
+      "standard_id": "S6",
+      "label": "Promotion & advocacy",
+      "text": "Describe strategies, including the use of technology, for the promotion and advocacy of physical education and expanded physical activity opportunities."
     }
   ]
 }

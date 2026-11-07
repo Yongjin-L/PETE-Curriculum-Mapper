@@ -76,7 +76,7 @@ function footer(r: Report) {
       children: [
         new Paragraph({
           children: [
-            new TextRun({ text: `${r.credit}  |  Data set ${r.datasetVersion}  |  Page `, size: 15, color: MUTED }),
+            new TextRun({ text: `${r.credit}  |  Page `, size: 15, color: MUTED }),
             new TextRun({ children: [PageNumber.CURRENT], size: 15, color: MUTED }),
             new TextRun({ text: " of ", size: 15, color: MUTED }),
             new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 15, color: MUTED }),
@@ -94,38 +94,37 @@ export async function renderDocx(r: Report): Promise<Blob> {
   if (r.program || r.university) main.push(p([r.program, r.university].filter(Boolean).join(" | "), { size: 26, after: 120 }));
   main.push(
     p(
-      `Generated ${r.generated}  |  ${r.stats.courses} courses  |  ${r.stats.topicsMapped} topics mapped  |  ${r.stats.placements} placements ` +
+      `Generated ${r.generated}  |  ${r.stats.courses} courses  |  ${r.stats.componentsMapped} of ${r.stats.componentsTotal} SHAPE components mapped  |  ${r.stats.placements} placements ` +
         `(I ${r.stats.byLevel.I}, R ${r.stats.byLevel.R}, M ${r.stats.byLevel.M})`,
       { size: 18, color: MUTED }
     ),
-    p(`Levels: ${LEVEL_LEGEND}`, { size: 18, color: MUTED, after: 240 })
+    p(`Levels: ${LEVEL_LEGEND}`, { size: 18, color: MUTED }),
+    p(`Standards: ${r.source}`, { size: 18, color: MUTED, after: 240 })
   );
 
-  main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Courses and topics")] }));
-  const { chapters, standards } = r.sections;
+  main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Courses and SHAPE components")] }));
+  const detail = r.sections.wording;
   for (const c of r.courses) {
     main.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 240 }, children: [new TextRun(c.heading)] }));
-    if (!c.topics.length) {
-      main.push(p("No topics mapped yet.", { color: MUTED, size: 18 }));
+    if (!c.items.length) {
+      main.push(p("No components mapped yet.", { color: MUTED, size: 18 }));
       continue;
     }
-    const detail = chapters || standards;
-    const widths = detail ? [28, 14, ...(chapters && standards ? [34, 24] : [58])] : [70, 30];
+    const widths = detail ? [30, 15, 55] : [70, 30];
     main.push(
       table([
         new TableRow({
           tableHeader: true,
-          children: [headCell("Topic", widths[0]), headCell("Level", widths[1]), ...(chapters ? [headCell("Chapters", widths[2])] : []), ...(standards ? [headCell("SHAPE standards", widths[chapters ? 3 : 2])] : [])],
+          children: [headCell("Component", widths[0]), headCell("Level", widths[1]), ...(detail ? [headCell("SHAPE wording", widths[2])] : [])],
         }),
-        ...c.topics.map(
-          (tp) =>
+        ...c.items.map(
+          (it) =>
             new TableRow({
               cantSplit: true,
               children: [
-                cell(lines([tp.name + (tp.custom ? " (custom)" : "")], 19)),
-                levelCell(tp.level, `${tp.level} - ${LEVEL_NAMES[tp.level]}`),
-                ...(chapters ? [cell(lines(tp.chapters, 17))] : []),
-                ...(standards ? [cell(lines(tp.standards, 17))] : []),
+                cell([new Paragraph({ children: [new TextRun({ text: it.code + "  ", bold: true, color: PRIMARY, size: 19 }), new TextRun({ text: it.label, size: 19 })] })]),
+                levelCell(it.level, `${it.level} - ${LEVEL_NAMES[it.level]}`),
+                ...(detail ? [cell(lines([it.text || "-"], 17))] : []),
               ],
             })
         ),
@@ -135,10 +134,10 @@ export async function renderDocx(r: Report): Promise<Blob> {
 
   if (r.sections.coverage) {
     main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 360 }, children: [new TextRun("SHAPE America standards coverage")] }));
-    main.push(p("Related topics are those linked to the standard in the data set. Levels count placements of those topics across courses.", { size: 18, color: MUTED }));
+    main.push(p("Components mapped = components placed on at least one course. Levels count placements across courses.", { size: 18, color: MUTED }));
     main.push(
       table([
-        new TableRow({ tableHeader: true, children: [headCell("Standard", 46), headCell("Related topics mapped", 20), headCell("Courses", 10), headCell("I", 8), headCell("R", 8), headCell("M", 8)] }),
+        new TableRow({ tableHeader: true, children: [headCell("Standard", 46), headCell("Components mapped", 20), headCell("Courses", 10), headCell("I", 8), headCell("R", 8), headCell("M", 8)] }),
         ...r.coverage.map(
           (s) =>
             new TableRow({
@@ -154,11 +153,6 @@ export async function renderDocx(r: Report): Promise<Blob> {
         ),
       ])
     );
-  }
-
-  if (r.sections.references && r.references.length) {
-    main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 360 }, children: [new TextRun("References")] }));
-    for (const ref of r.references) main.push(new Paragraph({ indent: { left: 360, hanging: 360 }, spacing: { after: 100 }, children: [new TextRun({ text: ref, size: 20 })] }));
   }
 
   if (r.sections.analysis && r.analysis) {
@@ -181,19 +175,19 @@ export async function renderDocx(r: Report): Promise<Blob> {
 
   const sections: ISectionOptions[] = [{ properties: { page: { margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } } }, footers: footer(r), children: main }];
 
-  if (r.sections.matrix && r.matrix.rows.length) {
+  if (r.sections.matrix && r.matrix.groups.length) {
     const n = r.matrix.columns.length;
     const topicW = n > 10 ? 22 : 30;
     const colW = (100 - topicW) / Math.max(n, 1);
     const size = n > 12 ? 14 : 17;
     const matrix: (Paragraph | Table)[] = [
-      new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Topics × courses matrix")] }),
+      new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("SHAPE components × courses matrix")] }),
       p(`Levels: ${LEVEL_LEGEND}`, { size: 18, color: MUTED }),
       table([
         new TableRow({
           tableHeader: true,
           children: [
-            headCell("Topic", topicW),
+            headCell("Component", topicW),
             ...r.matrix.columns.map(
               (c) =>
                 new TableCell({
@@ -206,13 +200,27 @@ export async function renderDocx(r: Report): Promise<Blob> {
             ),
           ],
         }),
-        ...r.matrix.rows.map(
-          (row) =>
-            new TableRow({
-              cantSplit: true,
-              children: [cell(lines([row.topic], size + 1)), ...row.cells.map((lv) => levelCell(lv, lv, colW, true))],
-            })
-        ),
+        ...r.matrix.groups.flatMap((g) => [
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({
+                columnSpan: n + 1,
+                children: [new Paragraph({ children: [new TextRun({ text: g.standard, bold: true, color: PRIMARY, size: size + 1 })] })],
+                shading: { type: ShadingType.CLEAR, color: "auto", fill: "ECF1F7" },
+                borders: BORDERS,
+                margins: { top: 40, bottom: 40, left: 80, right: 80 },
+              }),
+            ],
+          }),
+          ...g.rows.map(
+            (row) =>
+              new TableRow({
+                cantSplit: true,
+                children: [cell(lines([`${row.code}  ${row.label}`], size + 1)), ...row.cells.map((lv) => levelCell(lv, lv, colW, true))],
+              })
+          ),
+        ]),
       ]),
     ];
     if (r.matrix.columns.some((c, i) => c !== r.matrix.columnNames[i]))

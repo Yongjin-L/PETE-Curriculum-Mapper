@@ -1,7 +1,8 @@
 # AI features: one-time setup
 
 The site has two AI features:
-- **Upload plan of study:** reads a PDF, Word file, image or CSV and lists the courses for the user to review and confirm.
+- **Upload plan of study:** reads a PDF, Word file, image or CSV, lists the courses and suggests an initial SHAPE component matching (I/R/M) for the user to review and confirm.
+- **Suggest matching:** for courses typed or pasted in, suggests components and levels.
 - **Analyze my map:** writes a short review of standards coverage, I→R→M progression, course balance and gaps.
 
 Both features need **Google sign-in to be set up first** (see [GOOGLE_SETUP.md](GOOGLE_SETUP.md)), because each person's daily limit is tied to their Google account. Until the steps below are done, the site shows "AI features are not set up yet" and everything else works normally.
@@ -33,6 +34,7 @@ Optional settings (defaults shown):
 |---|---|---|
 | `AI_DAILY_UPLOADS` | `5` | Plan-of-study uploads per person per day |
 | `AI_DAILY_ANALYSES` | `10` | Map analyses per person per day |
+| `AI_DAILY_SUGGESTIONS` | `5` | "Suggest matching" runs per person per day |
 | `AI_GLOBAL_DAILY_LIMIT` | `100` | All AI uses on the whole site per day (cost safety net) |
 | `AI_DISABLED` | *(unset)* | Set to `true` to switch AI off instantly without removing the key |
 | `AI_MODEL` | `claude-opus-5-5` | The Claude model. `claude-sonnet-5-5` costs about half as much |
@@ -42,7 +44,7 @@ Limits reset at midnight UTC. Then **redeploy**: Deployments → ⋯ → **Redep
 ## 4. Try it
 1. Sign in on the site → **Add courses** → **Upload plan of study (AI)** → choose a PDF of a plan of study.
 2. Review the list, fix anything, and click **Confirm**.
-3. Map a few topics → **Coverage** tab → **Analyze my map**.
+3. Review the suggested matching and confirm → **Coverage** tab → **Analyze my map**.
 4. **Export → Full** includes the analysis.
 
 ## What it costs (estimates)
@@ -50,7 +52,8 @@ The default model is Claude Opus 5.5 ($4 per million input tokens, $20 per milli
 
 | Action | Typical cost |
 |---|---|
-| Reading a 2–6 page plan of study | about $0.03–$0.10 |
+| Reading a 2–6 page plan of study and suggesting the matching | about $0.05–$0.15 |
+| Suggesting matching for typed courses | about $0.03–$0.08 |
 | One map analysis | about $0.04–$0.10 |
 
 With the default site-wide cap of 100 uses a day, the worst case is roughly $10 a day. Your Anthropic monthly spend limit is the hard ceiling. Check real usage at console.anthropic.com → **Usage**.

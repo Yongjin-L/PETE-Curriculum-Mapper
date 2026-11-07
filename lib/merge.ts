@@ -52,10 +52,6 @@ function mergeField<T>(base: T, mine: T, theirs: T): T {
 export function mergePlans(base: Plan, mine: Plan, theirs: Plan): Plan {
   const courses = mergeById(base.courses, mine.courses, theirs.courses, (c) => c.id);
   const courseIds = new Set(courses.map((c) => c.id));
-  const topicKey = (t: { topic_id: string }) => t.topic_id;
-  const customTopics = mergeById(base.customTopics, mine.customTopics, theirs.customTopics, topicKey);
-  const customTextbooks = mergeById(base.customTextbooks, mine.customTextbooks, theirs.customTextbooks, (b) => b.textbook_id);
-  const customChapters = mergeById(base.customChapters, mine.customChapters, theirs.customChapters, (c) => c.chapter_id);
 
   const placements = mergeById(base.placements, mine.placements, theirs.placements, (p) => p.courseId + "|" + p.topicId)
     // drop placements whose course was deleted in the merge
@@ -69,9 +65,6 @@ export function mergePlans(base: Plan, mine: Plan, theirs: Plan): Plan {
     },
     courses,
     placements,
-    customTopics,
-    customTextbooks,
-    customChapters,
     analysis: mergeField(base.analysis, mine.analysis, theirs.analysis),
     meta: { ...mine.meta, updatedAt: new Date().toISOString() },
   };
@@ -96,10 +89,6 @@ export function describeChanges(base: Plan, next: Plan): string[] {
   count([...np.entries()].filter(([k, p]) => bp.has(k) && bp.get(k)!.level !== p.level).length, "level", "changed");
 
   if (!same(base.program, next.program)) out.push("program details edited");
-  const bt = base.customTopics.length + base.customTextbooks.length;
-  const nt = next.customTopics.length + next.customTextbooks.length;
-  if (!same(base.customTopics, next.customTopics) || !same(base.customTextbooks, next.customTextbooks))
-    out.push(nt === bt ? "custom topics/books edited" : `custom topics/books ${nt > bt ? "added" : "removed"}`);
 
   return out.length ? out : ["no content changes"];
 }

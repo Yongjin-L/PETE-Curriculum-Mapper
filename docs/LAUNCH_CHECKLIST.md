@@ -3,7 +3,8 @@
 Work through this in order. Each item says where to do it. Items marked ✅ are already built into the site.
 
 ## A. Content (most important)
-- [ ] **Replace the sample data set.** The site still shows the 7 sample topics and two "SAMPLE Textbook" entries. Edit `dataset/PETE_dataset_template.xlsx` and upload it back to the `dataset` folder on GitHub, or send it to Claude. See [dataset/README.md](../dataset/README.md).
+- [ ] **Check the standards data.** The site uses the six SHAPE standards and 25 components from the 2017 document, each with a short label for the map. Review the labels in `dataset/PETE_dataset_template.xlsx` (components tab) and change any wording you'd like. See [dataset/README.md](../dataset/README.md).
+- [ ] **Try the AI matching with 2–3 real plans of study** (yours and a colleague's) and note how much editing the suggestions needed. That's useful feedback to share with Claude for tuning.
 - [ ] Check the SHAPE standard labels in `standards.csv` against SHAPE America's official 2017 document.
 - [ ] Read the **Help**, **Privacy** and **Terms** pages (`/help`, `/privacy`, `/terms`) and adjust the wording if you like. Your university may also want to review them.
 
@@ -13,7 +14,7 @@ Work through this in order. Each item says where to do it. Items marked ✅ are 
 - [ ] **AI turned on:** [AI_SETUP.md](AI_SETUP.md), including the Anthropic monthly spend limit.
 
 ## C. Usage statistics
-✅ Built in: anonymous feature counts (maps started, courses added, topics placed, exports, sign-ins, AI use) and an estimate of distinct institutions. University names are stored only as one-way codes. No cookies.
+✅ Built in: anonymous feature counts (maps started, courses added, components placed, AI suggestions accepted, exports, sign-ins, AI use) and an estimate of distinct institutions. University names are stored only as one-way codes. No cookies.
 
 - [ ] **Turn on page-view statistics:** Vercel → project → **Analytics** tab → **Enable** (Web Analytics; the free plan includes a monthly allowance).
 - [ ] **Make your private statistics link:** Vercel → Settings → Environment Variables → add `STATS_KEY` = a long random phrase only you know, for example four random words and a number, then redeploy.
@@ -27,7 +28,7 @@ Work through this in order. Each item says where to do it. Items marked ✅ are 
   2. What were you trying to do?
   3. What worked well?
   4. What was confusing or didn't work? (include the browser, if relevant)
-  5. Topics or textbooks that should be added to the shared list
+  5. How accurate was the AI-suggested matching for your program?
   6. May we contact you? (optional email)
 - [ ] Copy the form's **Send → link** and add it in Vercel as `NEXT_PUBLIC_FEEDBACK_URL`, then redeploy.
 
@@ -41,7 +42,7 @@ While the app is in **Testing**, only test users can sign in. To open it to all 
 
 ## F. Final checks (about 20 minutes)
 On the real site, ideally on two computers or a computer and a phone:
-- [ ] Without signing in: add courses (type and paste), place topics, change levels, reload the page. The work is still there.
+- [ ] Without signing in: add courses (type and paste), place components, change levels, reload the page. The work is still there.
 - [ ] Sign in → **Save to Drive** → the file appears in Google Drive → **PETE Curriculum Mapper** folder.
 - [ ] Share the file with a colleague. They open it via **My maps → Open a map shared with me…**, make a change, and you see it within about a minute.
 - [ ] Both of you edit at the same time → the "changed by someone else" dialog appears → **Keep both** keeps both changes.
@@ -52,6 +53,6 @@ On the real site, ideally on two computers or a computer and a phone:
 
 ## G. Pilot with faculty (suggested)
 1. **Invite 3–5 PETE programs.** Colleagues from conferences such as SHAPE America or AIESEP are good candidates. If Google sign-in isn't public yet, add them as test users.
-2. **Give them a short task list:** "Enter your program's courses, map at least 10 topics, export a Full PDF, and send feedback."
+2. **Give them a short task list:** "Upload your plan of study, review the suggested matching, refine it, export a Full PDF, and send feedback."
 3. **Run it for 2–3 weeks**, then review the feedback form and the `/stats` page.
-4. **Update the shared data set** with topics and textbooks the pilot suggests, then announce the tool more widely.
+4. **Adjust labels or the AI matching guidance** based on the pilot, then announce the tool more widely.

@@ -1,5 +1,5 @@
-import { masterDataset } from "./dataset";
-import type { Chapter, Course, Level, Placement, Plan, Textbook, Topic } from "./types";
+import { dataset, getLibrary } from "./dataset";
+import type { Course, Level, Placement, Plan } from "./types";
 import { LEVELS } from "./types";
 
 export const STORAGE_KEY = "petemap:plan:v1";
@@ -8,13 +8,10 @@ export function emptyPlan(): Plan {
   const now = new Date().toISOString();
   return {
     schemaVersion: 1,
-    datasetVersion: masterDataset.datasetVersion,
+    datasetVersion: dataset.datasetVersion,
     program: { university: "", name: "" },
     courses: [],
     placements: [],
-    customTopics: [],
-    customTextbooks: [],
-    customChapters: [],
     analysis: null,
     meta: { createdAt: now, updatedAt: now },
   };
@@ -22,17 +19,6 @@ export function emptyPlan(): Plan {
 
 export function newCourseId(): string {
   return "c" + Math.random().toString(36).slice(2, 10);
-}
-
-/** Next free custom ID, e.g. nextCustomId(["U-T001"], "U-T", 3) -> "U-T002" */
-export function nextCustomId(existing: string[], prefix: string, pad: number): string {
-  let max = 0;
-  for (const id of existing) {
-    if (!id.startsWith(prefix)) continue;
-    const n = parseInt(id.slice(prefix.length), 10);
-    if (!Number.isNaN(n) && n > max) max = n;
-  }
-  return prefix + String(max + 1).padStart(pad, "0");
 }
 
 /** I if no earlier course already covers the topic, otherwise R. */
@@ -44,7 +30,12 @@ export function suggestLevel(plan: Plan, courseId: string, topicId: string): Lev
 
 export type Action =
   | { type: "setProgram"; university?: string; name?: string }
-  | { type: "addCourses"; courses: { number: string; name: string }[]; source?: "manual" | "paste" | "ai" }
+  | {
+      type: "addCourses";
+      courses: { number: string; name: string; components?: { id: string; level: Level }[] }[];
+      source?: "manual" | "paste" | "ai";
+    }
+  | { type: "addPlacements"; placements: Placement[] }
   | { type: "updateCourse"; id: string; number: string; name: string }
   | { type: "deleteCourse"; id: string }
   | { type: "moveCourse"; id: string; delta: -1 | 1 }
@@ -52,10 +43,6 @@ export type Action =
   | { type: "movePlacement"; fromCourseId: string; toCourseId: string; topicId: string }
   | { type: "setLevel"; courseId: string; topicId: string; level: Level }
   | { type: "removePlacement"; courseId: string; topicId: string }
-  | { type: "saveCustomTopic"; topic: Topic }
-  | { type: "deleteCustomTopic"; topicId: string }
-  | { type: "addCustomTextbook"; textbook: Textbook; chapters: Chapter[] }
-  | { type: "deleteCustomTextbook"; textbookId: string }
   | { type: "setAnalysis"; analysis: Plan["analysis"] }
   | { type: "replacePlan"; plan: Plan };
 
@@ -65,10 +52,22 @@ function reduce(plan: Plan, a: Action): Plan {
       return { ...plan, program: { ...plan.program, ...stripUndefined({ university: a.university, name: a.name }) } };
 
     case "addCourses": {
-      const added: Course[] = a.courses
-        .filter((c) => c.number.trim() || c.name.trim())
-        .map((c) => ({ id: newCourseId(), number: c.number.trim(), name: c.name.trim() }));
-      return { ...plan, courses: [...plan.courses, ...added] };
+      const rows = a.courses.filter((c) => c.number.trim() || c.name.trim());
+      const added: Course[] = rows.map((c) => ({ id: newCourseId(), number: c.number.trim(), name: c.name.trim() }));
+      const placements: Placement[] = rows.flatMap((c, i) =>
+        (c.components ?? []).filter((x, j, all) => all.findIndex((y) => y.id === x.id) === j).map((x) => ({ courseId: added[i].id, topicId: x.id, level: x.level }))
+      );
+      return { ...plan, courses: [...plan.courses, ...added], placements: [...plan.placements, ...placements] };
+    }
+
+    case "addPlacements": {
+      const fresh = a.placements.filter(
+        (p, i, all) =>
+          plan.courses.some((c) => c.id === p.courseId) &&
+          !hasPlacement(plan, p.courseId, p.topicId) &&
+          all.findIndex((q) => q.courseId === p.courseId && q.topicId === p.topicId) === i
+      );
+      return fresh.length ? { ...plan, placements: [...plan.placements, ...fresh] } : plan;
     }
 
     case "updateCourse":
@@ -122,41 +121,6 @@ function reduce(plan: Plan, a: Action): Plan {
         ...plan,
         placements: plan.placements.filter((p) => !(p.courseId === a.courseId && p.topicId === a.topicId)),
       };
-
-    case "saveCustomTopic": {
-      const exists = plan.customTopics.some((t) => t.topic_id === a.topic.topic_id);
-      const topic = { ...a.topic, custom: true };
-      return {
-        ...plan,
-        customTopics: exists
-          ? plan.customTopics.map((t) => (t.topic_id === topic.topic_id ? topic : t))
-          : [...plan.customTopics, topic],
-      };
-    }
-
-    case "deleteCustomTopic":
-      return {
-        ...plan,
-        customTopics: plan.customTopics.filter((t) => t.topic_id !== a.topicId),
-        placements: plan.placements.filter((p) => p.topicId !== a.topicId),
-      };
-
-    case "addCustomTextbook":
-      return {
-        ...plan,
-        customTextbooks: [...plan.customTextbooks, { ...a.textbook, custom: true }],
-        customChapters: [...plan.customChapters, ...a.chapters.map((c) => ({ ...c, custom: true }))],
-      };
-
-    case "deleteCustomTextbook": {
-      const removed = new Set(plan.customChapters.filter((c) => c.textbook_id === a.textbookId).map((c) => c.chapter_id));
-      return {
-        ...plan,
-        customTextbooks: plan.customTextbooks.filter((b) => b.textbook_id !== a.textbookId),
-        customChapters: plan.customChapters.filter((c) => c.textbook_id !== a.textbookId),
-        customTopics: plan.customTopics.map((t) => ({ ...t, chapters: t.chapters.filter((c) => !removed.has(c.chapter_id)) })),
-      };
-    }
 
     case "setAnalysis":
       return { ...plan, analysis: a.analysis };
@@ -216,10 +180,11 @@ export function normalizePlan(input: unknown): Plan {
     .filter((c) => c && typeof c.id === "string")
     .map((c) => ({ id: c.id as string, number: str(c.number), name: str(c.name) }));
   const courseIds = new Set(courses.map((c) => c.id));
+  const known = getLibrary().componentById; // placements for components that no longer exist are dropped
 
   const seen = new Set<string>();
   const placements: Placement[] = arr<Record<string, unknown>>(o.placements)
-    .filter((p) => p && courseIds.has(p.courseId as string) && typeof p.topicId === "string")
+    .filter((p) => p && courseIds.has(p.courseId as string) && typeof p.topicId === "string" && known.has(p.topicId as string))
     .map((p) => ({
       courseId: p.courseId as string,
       topicId: p.topicId as string,
@@ -241,15 +206,6 @@ export function normalizePlan(input: unknown): Plan {
     program: { university: str(program.university), name: str(program.name) },
     courses,
     placements,
-    customTopics: arr<Topic>(o.customTopics).map((t) => ({
-      ...t,
-      keywords: arr<string>(t.keywords),
-      chapters: arr(t.chapters),
-      standards: arr<string>(t.standards),
-      custom: true,
-    })),
-    customTextbooks: arr<Textbook>(o.customTextbooks).map((b) => ({ ...b, custom: true })),
-    customChapters: arr<Chapter>(o.customChapters).map((c) => ({ ...c, custom: true })),
     analysis,
     meta: { createdAt: str(meta.createdAt) || base.meta.createdAt, updatedAt: str(meta.updatedAt) || base.meta.updatedAt },
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Plan } from "@/lib/types";
+import type { Level, Plan } from "@/lib/types";
 import type { DriveApi } from "./useDrive";
 
 export interface Usage {
@@ -13,16 +13,18 @@ export interface Usage {
 export interface ParsedPlan {
   university: string;
   program_name: string;
-  courses: { number: string; name: string; term: string }[];
+  courses: { number: string; name: string; term: string; components: Suggested }[];
   notes: string;
   usage?: Usage;
 }
+
+export type Suggested = { id: string; level: Level }[];
 
 /** AI features: availability, remaining uses, and the two calls. Requires Google sign-in. */
 export function useAi(drive: DriveApi) {
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [reason, setReason] = useState<string | null>(null);
-  const [usage, setUsage] = useState<{ parse?: Usage; analyze?: Usage }>({});
+  const [usage, setUsage] = useState<{ parse?: Usage; analyze?: Usage; suggest?: Usage }>({});
   const signedIn = !!drive.user && !["signed-out", "reconnect", "off"].includes(drive.status);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function useAi(drive: DriveApi) {
   }, [signedIn]);
 
   const call = useCallback(
-    async <T,>(url: string, body: BodyInit, feature: "parse" | "analyze", json = false): Promise<T> => {
+    async <T,>(url: string, body: BodyInit, feature: "parse" | "analyze" | "suggest", json = false): Promise<T> => {
       const token = drive.getToken();
       if (!token) throw new Error("Please sign in with Google (or reconnect) to use AI features.");
       const r = await fetch(url, {
@@ -74,7 +76,18 @@ export function useAi(drive: DriveApi) {
     [call]
   );
 
-  return { enabled, reason, usage, signedIn, needsGoogle: !drive.enabled, signIn: () => drive.signIn(), parsePlan, analyze };
+  const suggest = useCallback(
+    (plan: Plan, courses: { number: string; name: string }[]) =>
+      call<{ suggestions: Suggested[]; notes: string; usage: Usage }>(
+        "/api/suggest-matching",
+        JSON.stringify({ program: plan.program, courses }),
+        "suggest",
+        true
+      ),
+    [call]
+  );
+
+  return { enabled, reason, usage, signedIn, suggest, needsGoogle: !drive.enabled, signIn: () => drive.signIn(), parsePlan, analyze };
 }
 
 export type AiApi = ReturnType<typeof useAi>;

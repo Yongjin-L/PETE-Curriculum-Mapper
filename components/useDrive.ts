@@ -62,7 +62,7 @@ export function fileNameFor(plan: Plan): string {
   return `${safeFileBase(plan.program.name || plan.program.university || "Untitled curriculum map")}.petemap.json`;
 }
 
-const hasContent = (p: Plan) => p.courses.length > 0 || !!p.program.name || !!p.program.university || p.customTopics.length > 0;
+const hasContent = (p: Plan) => p.courses.length > 0 || !!p.program.name || !!p.program.university;
 const editorName = (m: DriveFile) => m.lastModifyingUser?.displayName || m.lastModifyingUser?.emailAddress || "someone";
 
 function linkFrom(meta: DriveFile, base: Plan, autoName?: string): Link {

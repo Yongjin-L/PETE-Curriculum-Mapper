@@ -5,8 +5,6 @@ export const EVENTS = [
   "courses_added_paste",
   "courses_added_ai",
   "topic_placed",
-  "custom_topic_added",
-  "custom_book_added",
   "signed_in",
   "drive_file_created",
   "drive_map_opened",
@@ -18,6 +16,8 @@ export const EVENTS = [
   "json_imported",
   "ai_upload",
   "ai_analysis",
+  "ai_suggest",
+  "ai_matching_applied",
 ] as const;
 
 export type EventName = (typeof EVENTS)[number];
@@ -27,9 +27,7 @@ export const EVENT_LABELS: Record<EventName, string> = {
   courses_added_manual: "Courses typed in",
   courses_added_paste: "Courses pasted",
   courses_added_ai: "Courses added from AI upload",
-  topic_placed: "Topics placed on courses",
-  custom_topic_added: "Custom topics created",
-  custom_book_added: "Custom books created",
+  topic_placed: "Components placed on courses (by hand)",
   signed_in: "Google sign-ins",
   drive_file_created: "Maps saved to a new Drive file",
   drive_map_opened: "Maps opened from Drive",
@@ -41,4 +39,6 @@ export const EVENT_LABELS: Record<EventName, string> = {
   json_imported: "JSON files opened",
   ai_upload: "AI plan-of-study uploads",
   ai_analysis: "AI map analyses",
+  ai_suggest: "AI matching suggestions (typed courses)",
+  ai_matching_applied: "AI component suggestions accepted",
 };

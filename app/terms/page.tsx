@@ -26,9 +26,8 @@ export default function Terms() {
 
       <h2>Reference data</h2>
       <p>
-        Topic lists and textbook references are provided for planning purposes. Textbook titles and chapter titles are cited for reference only
-        and remain the property of their publishers. SHAPE America standards are summarized with short labels; consult SHAPE America&apos;s
-        official documents for the full standards.
+        The site uses the SHAPE America (2017) National Standards for Initial Physical Education Teacher Education for planning purposes. The
+        standards are the property of SHAPE America; consult SHAPE America&apos;s official document for authoritative wording.
       </p>
 
       <h2>AI-generated results</h2>
