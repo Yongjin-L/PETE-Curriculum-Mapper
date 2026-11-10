@@ -72,8 +72,9 @@ export default function Help() {
 
       <h2>The standards</h2>
       <p>
-        The six standards and their 25 components are the rows of the grid, grouped by standard. Hover over a component to read its full
-        wording. Source: SHAPE America (2017), <i>National Standards for Initial Physical Education Teacher Education</i>. © SHAPE America.
+        The six standards and their 25 components are the rows of the grid, grouped by standard. <b>Click a component&apos;s name</b> to
+        see its full wording and where it is taught. To see longer names, <b>drag the edge of the component column</b> to widen it
+        (double-click the edge to reset). Source: SHAPE America (2017), <i>National Standards for Initial Physical Education Teacher Education</i>. © SHAPE America.
       </p>
 
       <h2>Saving your work</h2>

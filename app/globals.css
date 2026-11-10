@@ -692,3 +692,37 @@ th.term { white-space: normal; line-height: 1.1; max-width: none; }
 .cmap { table-layout: fixed; }
 .cmap th.first { width: var(--first-w); min-width: var(--first-w); max-width: var(--first-w); }
 .cmap .add-col { width: 48px; }
+
+/* resizable component column + full-component card */
+.cmap th.corner { position: sticky; overflow: visible; }
+.col-resize {
+  position: absolute; top: 0; right: -4px; width: 9px; height: 100%; cursor: col-resize; z-index: 5;
+  display: block; touch-action: none;
+}
+.col-resize::after {
+  content: ""; position: absolute; top: 20%; bottom: 20%; left: 3px; width: 3px; border-radius: 2px;
+  background: var(--border);
+}
+.col-resize:hover::after, .col-resize:focus-visible::after { background: var(--primary); }
+.comp-name {
+  display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; border: 0; background: transparent;
+  padding: 4px 4px 4px 0; text-align: left; cursor: pointer; color: inherit; border-radius: 6px;
+}
+.comp-name:hover .clabel { text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 3px; }
+.comp-name .clabel { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.comp-card {
+  position: fixed; z-index: 60; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22); display: flex; flex-direction: column; gap: 6px;
+}
+.comp-card h3 { font-size: 1rem; margin: 0; }
+.comp-text { margin: 0; line-height: 1.5; font-size: 0.9rem; }
+.comp-levels { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 2px; }
+.comp-levels .status { float: none; margin: 0 2px 0 6px; display: inline-grid; }
+.lv-pill { font-size: 0.75rem; padding: 2px 7px; border-radius: 999px; }
+.lv-pill.level-I { background: var(--lvl-I-soft); color: var(--lvl-I); }
+.lv-pill.level-R { background: var(--lvl-R-mid); color: var(--lvl-R); }
+.lv-pill.level-M { background: var(--lvl-M-solid); color: var(--lvl-M-ink); }
+.comp-card .src { margin: 2px 0 0; }
+.comp-card > .row { flex-wrap: nowrap; align-items: flex-start; }
+.comp-card > .row > span { flex: 1; min-width: 0; }
+.comp-card > .row > .icon-btn { flex: 0 0 auto; }

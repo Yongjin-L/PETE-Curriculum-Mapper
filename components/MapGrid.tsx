@@ -31,6 +31,63 @@ export function MapGrid({
   const summary = summarize(plan);
   const [menu, setMenu] = useState<string | "new" | null>(null);
 
+  // ---- resizable component column (remembered in this browser)
+  const [firstW, setFirstW] = useState<number | null>(null);
+  useEffect(() => {
+    try {
+      const w = Number(localStorage.getItem(COLW_KEY));
+      if (w) setFirstW(clampW(w));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const saveWidth = (w: number | null) => {
+    setFirstW(w);
+    try {
+      if (w) localStorage.setItem(COLW_KEY, String(w));
+      else localStorage.removeItem(COLW_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
+  const currentFirstW = () => (document.querySelector(".cmap th.first") as HTMLElement | null)?.offsetWidth ?? 300;
+  const startResize = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const x0 = e.clientX;
+    const w0 = firstW ?? currentFirstW();
+    let w = w0;
+    const move = (ev: PointerEvent) => {
+      w = clampW(w0 + ev.clientX - x0);
+      setFirstW(w);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      saveWidth(w);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  // ---- full-component card
+  const [detail, setDetail] = useState<{ id: string; top: number; left: number } | null>(null);
+  useEffect(() => {
+    if (!detail) return;
+    const close = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest(".comp-card") && !t.closest(".comp-name")) setDetail(null);
+    };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setDetail(null);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", esc);
+    window.addEventListener("resize", () => setDetail(null), { once: true });
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [detail]);
+
   // ---- painting: press on a cell, then drag across others to give them the same value
   const paint = useRef<{ value: Level | null; seen: Set<string> } | null>(null);
   useEffect(() => {
@@ -78,7 +135,12 @@ export function MapGrid({
   }
 
   return (
-    <div className="grid-wrap" onDragStart={(e) => e.preventDefault()}>
+    <div
+      className="grid-wrap"
+      onDragStart={(e) => e.preventDefault()}
+      onScroll={() => detail && setDetail(null)}
+      style={firstW ? ({ ["--first-w" as string]: `${Math.min(firstW, Math.round(window.innerWidth * 0.55))}px` } as React.CSSProperties) : undefined}
+    >
       <table className="cmap" style={{ minWidth: `calc(var(--first-w) + 48px + ${plan.courses.length * 70}px)` }}>
         <thead>
           {hasTerms && (
@@ -95,6 +157,22 @@ export function MapGrid({
           <tr>
             <th className="first corner">
               <span className="muted small">SHAPE component</span>
+              <span
+                className="col-resize"
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize component column"
+                title="Drag to widen · double-click to reset"
+                tabIndex={0}
+                onPointerDown={startResize}
+                onDoubleClick={() => saveWidth(null)}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                    e.preventDefault();
+                    saveWidth(clampW((firstW ?? currentFirstW()) + (e.key === "ArrowRight" ? 30 : -30)));
+                  }
+                }}
+              />
             </th>
             {plan.courses.map((c, i) => (
               <th key={c.id} className="course-h">
@@ -158,10 +236,21 @@ export function MapGrid({
                     const st = rowStatus(levels);
                     return (
                       <tr key={comp.component_id} className="comp-row">
-                        <th className="first" title={`${comp.component_id} ${comp.text}`}>
+                        <th className="first">
                           <div className="fcell">
-                            <span className="ccode">{comp.component_id}</span>
-                            <span className="clabel">{comp.label}</span>
+                            <button
+                              className="comp-name"
+                              title="Show the full component"
+                              aria-expanded={detail?.id === comp.component_id}
+                              onClick={(e) => {
+                                if (detail?.id === comp.component_id) return setDetail(null);
+                                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                setDetail({ id: comp.component_id, top: r.bottom + 6, left: r.left });
+                              }}
+                            >
+                              <span className="ccode">{comp.component_id}</span>
+                              <span className="clabel">{comp.label}</span>
+                            </button>
                             <span className={`status st-${st.kind}`} title={st.tip} aria-label={st.tip}>
                               {STATUS_ICON[st.kind]}
                             </span>
@@ -204,6 +293,57 @@ export function MapGrid({
           })}
         </tbody>
       </table>
+      {detail && <ComponentCard id={detail.id} top={detail.top} left={detail.left} plan={plan} onClose={() => setDetail(null)} />}
+    </div>
+  );
+}
+
+const COLW_KEY = "petemap:colw:v1";
+const clampW = (w: number) => Math.round(Math.min(640, Math.max(140, w)));
+
+/** Floating card with the full SHAPE wording of a component and its levels across courses. */
+function ComponentCard({ id, top, left, plan, onClose }: { id: string; top: number; left: number; plan: Plan; onClose: () => void }) {
+  const lib = getLibrary();
+  const comp = lib.componentById.get(id);
+  const std = comp && lib.standardById.get(comp.standard_id);
+  const levels = levelGrid(plan)(id);
+  const st = rowStatus(levels);
+  if (!comp) return null;
+  // keep the card on screen
+  const width = Math.min(380, window.innerWidth - 24);
+  const x = Math.max(12, Math.min(left, window.innerWidth - width - 12));
+  const below = top + 260 < window.innerHeight;
+  return (
+    <div
+      className="comp-card"
+      role="dialog"
+      aria-label={`${comp.component_id} ${comp.label}`}
+      style={{ left: x, width, ...(below ? { top } : { bottom: Math.max(12, window.innerHeight - top + 40) }) }}
+    >
+      <div className="row between">
+        <span className="small muted">{std ? `Standard ${std.standard_no}: ${std.title}` : ""}</span>
+        <button className="icon-btn" onClick={onClose} aria-label="Close">
+          ✕
+        </button>
+      </div>
+      <h3>
+        <span className="ccode">{comp.component_id}</span> {comp.label}
+      </h3>
+      <p className="comp-text">{comp.text}</p>
+      <div className="comp-levels">
+        {plan.courses.map((c, i) =>
+          levels[i] ? (
+            <span key={c.id} className={`lv-pill level-${levels[i]}`} title={c.name}>
+              {c.number || c.name} <b>{levels[i]}</b>
+            </span>
+          ) : null
+        )}
+        <span className={`status st-${st.kind}`} title={st.tip}>
+          {STATUS_ICON[st.kind]}
+        </span>
+        <span className="small muted">{st.tip}</span>
+      </div>
+      <p className="small muted src">SHAPE America (2017), Initial PETE Standards.</p>
     </div>
   );
 }
