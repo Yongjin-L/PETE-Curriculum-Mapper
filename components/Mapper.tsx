@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Dis
 import { emptyPlan, loadLocalPlan, newCourseId, normalizePlan, parseCourseLines, planReducer, saveLocalPlan, type Action } from "@/lib/plan";
 import { track, trackInstitution } from "@/lib/track";
 import { AnalysisPanel, DropPlan } from "./AiPanels";
-import { MapGrid, pendingKey, StandardTiles, type Pending } from "./MapGrid";
+import { MapGrid, pendingKey, StandardTiles, type Brush, type Pending } from "./MapGrid";
 import { Modal } from "./Modal";
 import type { ParsedPlan } from "./useAi";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
@@ -39,6 +39,7 @@ export function Mapper() {
   const [saveOk, setSaveOk] = useState(true);
   const [pending, setPendingState] = useState<Pending>(new Map());
   const [problemsOnly, setProblemsOnly] = useState(false);
+  const [brush, setBrush] = useState<Brush>("cycle");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [modal, setModal] = useState<"upload" | "review" | "typed" | null>(null);
   const [suggesting, setSuggesting] = useState(false);
@@ -234,11 +235,30 @@ export function Mapper() {
             }}
           />
           <div className="toolbar">
-            <span className="legend" aria-label="Levels">
-              <span className="lg-chip level-I" title="Introduced">I</span>
-              <span className="lg-chip level-R" title="Reinforced">R</span>
-              <span className="lg-chip level-M" title="Mastered">M</span>
-              <span className="small muted hint">Click a cell to cycle · drag to fill</span>
+            <span className="brushes" role="radiogroup" aria-label="What clicking a cell does">
+              {(
+                [
+                  ["cycle", "↻", "Cycle: click a cell for I → R → M → empty"],
+                  ["I", "I", "Introduced: click or drag to set I"],
+                  ["R", "R", "Reinforced: click or drag to set R"],
+                  ["M", "M", "Mastered: click or drag to set M"],
+                  ["clear", "⌫ Clear", "Clear: click or drag to remove"],
+                ] as [Brush, string, string][]
+              ).map(([b, label, tip]) => (
+                <button
+                  key={b}
+                  role="radio"
+                  aria-checked={brush === b}
+                  title={tip}
+                  className={"brush" + (b === "I" || b === "R" || b === "M" ? ` lg-chip level-${b}` : "") + (b === "clear" ? " brush-clear" : "") + (brush === b ? " on" : "")}
+                  onClick={() => setBrush(b)}
+                >
+                  {label}
+                </button>
+              ))}
+              <span className="small muted hint">
+                {brush === "cycle" ? "Click a cell to cycle · drag to fill" : brush === "clear" ? "Click or drag to remove" : `Click or drag to set ${brush}`}
+              </span>
             </span>
             <span className="tools">
               <button className={"chip-btn" + (problemsOnly ? " on" : "")} onClick={() => setProblemsOnly(!problemsOnly)} aria-pressed={problemsOnly}>
@@ -252,12 +272,24 @@ export function Mapper() {
               </button>
               {emptyCourses.length > 0 && ai.enabled && !ai.needsGoogle && (
                 <button className="chip-btn ai" onClick={ai.signedIn ? suggest : ai.signIn} disabled={suggesting}>
-                  {suggesting ? "Suggesting…" : `✨ Suggest for ${emptyCourses.length} course${emptyCourses.length === 1 ? "" : "s"}`}
+                  {suggesting ? "Suggesting…" : "✨ AI suggestion"}
                 </button>
               )}
               <button className="chip-btn ai" onClick={() => setModal("review")}>
                 ✨ AI review
               </button>
+              {plan.placements.length > 0 && (
+                <button
+                  className="chip-btn"
+                  title="Remove every level from the map (courses stay)"
+                  onClick={() => {
+                    if (confirm(`Clear all ${plan.placements.length} levels from the map? Your courses stay.`))
+                      dispatch({ type: "setCells", cells: plan.placements.map((p) => ({ courseId: p.courseId, topicId: p.topicId, level: null })) });
+                  }}
+                >
+                  ⌫ Clear all
+                </button>
+              )}
               <button className="chip-btn" onClick={() => setModal("upload")}>
                 ⬆ Upload plan
               </button>
@@ -284,6 +316,7 @@ export function Mapper() {
             pending={pending}
             setPending={setPending}
             problemsOnly={problemsOnly}
+            brush={brush}
             collapsed={collapsed}
             setCollapsed={setCollapsed}
           />

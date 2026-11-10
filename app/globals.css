@@ -726,3 +726,16 @@ th.term { white-space: normal; line-height: 1.1; max-width: none; }
 .comp-card > .row { flex-wrap: nowrap; align-items: flex-start; }
 .comp-card > .row > span { flex: 1; min-width: 0; }
 .comp-card > .row > .icon-btn { flex: 0 0 auto; }
+
+/* level brushes */
+.brushes { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.brush {
+  height: 28px; min-width: 30px; padding: 0 8px; border-radius: 7px; border: 2px solid transparent; cursor: pointer;
+  font-weight: 800; font-size: 0.8rem; background: var(--surface); color: var(--text);
+}
+.brush:not(.lg-chip) { border-color: var(--border); }
+.brush.lg-chip { width: auto; height: 28px; }
+.brush.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface) inset; }
+.brush-clear { color: var(--danger); font-weight: 700; }
+.brush-clear.on { border-color: var(--danger); background: var(--dup); }
+.comp-card .btn.danger { border-color: var(--danger); }

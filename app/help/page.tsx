@@ -30,8 +30,13 @@ export default function Help() {
           <b>Review the suggestions.</b> Click a dotted cell to accept it, or use <b>Accept all</b> / <b>Discard</b>.
         </li>
         <li>
-          <b>Edit the grid.</b> Click a cell to cycle <b>I → R → M → empty</b>. Press and drag across cells to fill several with the
-          same level.
+          <b>Edit the grid.</b> Click a cell to cycle <b>I → R → M → empty</b>, or pick <b>I</b>, <b>R</b> or <b>M</b> in the toolbar to
+          set that level directly. Press and drag across cells to fill several at once.
+        </li>
+        <li>
+          <b>Remove levels</b> with <b>⌫ Clear</b> in the toolbar: click or drag over cells to empty them. You can also clear a whole
+          component (click its name → <b>Clear this row</b>), a whole course (click the course → ⌫), or everything (<b>⌫ Clear all</b>; your
+          courses stay).
         </li>
         <li>
           <b>Check the icons</b> at the end of each component: ✓ builds to M, ! never reaches M, ↯ order problem (for example M before
@@ -46,7 +51,7 @@ export default function Help() {
         <li>Click a course name at the top of a column to rename it, set its year or semester, move it left or right, or delete it.</li>
         <li>
           Click <b>+</b> after the last column to add a course. No plan of study file? Type or paste your courses on the start screen, then
-          use <b>✨ Suggest</b>.
+          use <b>✨ AI suggestion</b>.
         </li>
         <li>Courses with a year or semester are grouped under that heading.</li>
       </ul>
@@ -111,7 +116,7 @@ export default function Help() {
           Excel, save as CSV or PDF, or paste the courses.
         </li>
         <li>
-          <b>✨ Suggest:</b> for courses you typed or pasted, adds dotted suggestions for courses that have none yet.
+          <b>✨ AI suggestion:</b> for courses you typed or pasted, adds dotted suggestions for courses that have none yet.
         </li>
         <li>
           <b>✨ AI review:</b> a short review of standards coverage, progression, course balance and gaps, with suggestions.

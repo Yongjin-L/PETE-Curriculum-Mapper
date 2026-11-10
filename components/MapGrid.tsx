@@ -6,7 +6,9 @@ import type { Action } from "@/lib/plan";
 import { cycle, levelGrid, rowStatus, STATUS_ICON, summarize } from "@/lib/status";
 import { LEVEL_NAMES, type Course, type Level, type Plan } from "@/lib/types";
 
-export type Pending = Map<string, Level>; // key: componentId|courseId
+export type Pending = Map<string, Level>;
+/** What clicking a cell does: cycle I->R->M->empty, set one level, or clear. */
+export type Brush = "cycle" | Level | "clear"; // key: componentId|courseId
 export const pendingKey = (componentId: string, courseId: string) => componentId + "|" + courseId;
 
 export function MapGrid({
@@ -15,6 +17,7 @@ export function MapGrid({
   pending,
   setPending,
   problemsOnly,
+  brush,
   collapsed,
   setCollapsed,
 }: {
@@ -23,6 +26,7 @@ export function MapGrid({
   pending: Pending;
   setPending: (p: Pending) => void;
   problemsOnly: boolean;
+  brush: Brush;
   collapsed: Set<string>;
   setCollapsed: (s: Set<string>) => void;
 }) {
@@ -113,7 +117,13 @@ export function MapGrid({
   const start = (componentId: string, courseId: string, current: Level | "") => {
     const k = pendingKey(componentId, courseId);
     // A dotted AI suggestion is accepted by clicking it.
-    const value = pending.has(k) && !current ? pending.get(k)! : cycle(current);
+    const value =
+      brush === "clear" ? null : brush !== "cycle" ? brush : pending.has(k) && !current ? pending.get(k)! : cycle(current);
+    if (brush === "clear" && pending.has(k)) {
+      const next = new Map(pending);
+      next.delete(k);
+      setPending(next);
+    }
     paint.current = { value, seen: new Set([k]) };
     apply(componentId, courseId, value);
   };
@@ -293,7 +303,7 @@ export function MapGrid({
           })}
         </tbody>
       </table>
-      {detail && <ComponentCard id={detail.id} top={detail.top} left={detail.left} plan={plan} onClose={() => setDetail(null)} />}
+      {detail && <ComponentCard id={detail.id} top={detail.top} left={detail.left} plan={plan} dispatch={dispatch} onClose={() => setDetail(null)} />}
     </div>
   );
 }
@@ -302,7 +312,7 @@ const COLW_KEY = "petemap:colw:v1";
 const clampW = (w: number) => Math.round(Math.min(640, Math.max(140, w)));
 
 /** Floating card with the full SHAPE wording of a component and its levels across courses. */
-function ComponentCard({ id, top, left, plan, onClose }: { id: string; top: number; left: number; plan: Plan; onClose: () => void }) {
+function ComponentCard({ id, top, left, plan, dispatch, onClose }: { id: string; top: number; left: number; plan: Plan; dispatch: Dispatch<Action>; onClose: () => void }) {
   const lib = getLibrary();
   const comp = lib.componentById.get(id);
   const std = comp && lib.standardById.get(comp.standard_id);
@@ -343,7 +353,17 @@ function ComponentCard({ id, top, left, plan, onClose }: { id: string; top: numb
         </span>
         <span className="small muted">{st.tip}</span>
       </div>
-      <p className="small muted src">SHAPE America (2017), Initial PETE Standards.</p>
+      <div className="row between">
+        <span className="small muted src">SHAPE America (2017), Initial PETE Standards.</span>
+        {levels.some(Boolean) && (
+          <button
+            className="btn btn-sm danger"
+            onClick={() => dispatch({ type: "setCells", cells: plan.courses.map((c) => ({ courseId: c.id, topicId: id, level: null })) })}
+          >
+            ⌫ Clear this row
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -399,6 +419,18 @@ function CourseMenu({
             </button>
             <button type="button" className="icon-btn" disabled={index === total - 1} onClick={() => dispatch({ type: "moveCourse", id: course.id, delta: 1 })} title="Move right" aria-label="Move right">
               →
+            </button>
+            <button
+              type="button"
+              className="icon-btn"
+              title="Clear all levels in this course"
+              aria-label="Clear all levels in this course"
+              onClick={() => {
+                dispatch({ type: "setCells", cells: getLibrary().components.map((x) => ({ courseId: course.id, topicId: x.component_id, level: null })) });
+                onClose();
+              }}
+            >
+              ⌫
             </button>
             <button
               type="button"
