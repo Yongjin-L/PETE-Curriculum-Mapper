@@ -83,12 +83,12 @@ export default function Home() {
             <li>
               <span className="how-num">2</span>
               <h3>Review the suggestions</h3>
-              <p>Fix course names, skip courses, and remove suggestions before anything is added. You stay in control.</p>
+              <p>Suggestions appear as dotted cells in the grid. Accept them one by one or all at once. You stay in control.</p>
             </li>
             <li>
               <span className="how-num">3</span>
               <h3>Refine and share</h3>
-              <p>Drag components between courses, change levels, check coverage, and export a PDF or Word report for your faculty.</p>
+              <p>Click a cell to set I, R or M, spot gaps from the icons, and export a PDF or Word report for your faculty.</p>
             </li>
           </ol>
         </section>

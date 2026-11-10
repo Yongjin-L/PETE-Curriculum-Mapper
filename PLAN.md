@@ -3,6 +3,8 @@
 **Creator:** Yongjin Lee, Adelphi University ([yongjin.info](https://yongjin.info))
 **Purpose:** A free public web tool that helps physical education teacher education (PETE) faculty map key topics, textbook chapters and SHAPE America 2017 Initial PETE Standards onto their program's courses, for internal program review.
 
+> **Visual update (November 2026):** the main screen is now a components × courses grid (click a cell to cycle I → R → M → empty, drag to fill), with level colors, a status icon per component (✓ builds to M, ! never M, ↯ order, ○ not addressed), six standard tiles with coverage rings, collapsible standards, columns grouped by year/semester, and AI suggestions shown as dotted cells to accept. The chip lists, side panel, review table and Coverage tab were removed.
+
 > **Scope update (November 2026):** to keep the tool simple, the site now maps only the **SHAPE America 2017 Initial PETE Standards and their 25 components**. Textbooks, chapters, topics and custom topics/books were removed. The main flow is: **upload a plan of study → AI lists the courses and suggests an initial component matching with I/R/M levels → faculty review and confirm → refine on the map**. Courses typed or pasted in can get the same suggestions ("Suggest matching with AI", with undo). Sections below that mention topics or textbooks describe the earlier design.
 
 ---

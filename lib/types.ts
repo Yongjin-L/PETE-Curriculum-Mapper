@@ -37,6 +37,7 @@ export interface Course {
   id: string;
   number: string;
   name: string;
+  term?: string; // e.g. "Year 1 Fall" (from the plan of study); used to group columns
 }
 
 export interface Placement {

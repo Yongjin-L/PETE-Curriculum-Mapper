@@ -23,27 +23,38 @@ export default function Help() {
       <h2>Getting started</h2>
       <ol>
         <li>
-          <b>Upload your plan of study</b> (PDF, Word, image or CSV). AI lists your courses and suggests which SHAPE components each course
-          addresses, with an I / R / M level. You need to sign in with Google for this step.
+          <b>Drop your plan of study</b> (PDF, Word, image or CSV). AI adds your courses as columns and suggests levels as{" "}
+          <b>dotted cells</b>. Sign in with Google for this step.
         </li>
         <li>
-          <b>Review and confirm.</b> Fix course numbers or names, untick courses to skip, and remove any suggested component with ✕. Nothing is
-          added until you confirm.
+          <b>Review the suggestions.</b> Click a dotted cell to accept it, or use <b>Accept all</b> / <b>Discard</b>.
         </li>
         <li>
-          <b>Refine the map.</b> On each course, click I, R or M to change a level, drag a component by its ⋮⋮ handle to another course, or ✕ to
-          remove it. Add components from the panel on the right by dragging them onto a course or with <b>+ Add</b>.
+          <b>Edit the grid.</b> Click a cell to cycle <b>I → R → M → empty</b>. Press and drag across cells to fill several with the
+          same level.
         </li>
         <li>
-          <b>Check coverage</b> on the Coverage tab, and optionally run the AI analysis.
+          <b>Check the icons</b> at the end of each component: ✓ builds to M, ! never reaches M, ↯ order problem (for example M before
+          I), ○ not addressed. <b>Problems only</b> shows just the rows to check.
         </li>
         <li>
           <b>Export</b> a PDF or Word report, or a JSON backup.
         </li>
       </ol>
+      <h3>Courses</h3>
+      <ul>
+        <li>Click a course name at the top of a column to rename it, set its year or semester, move it left or right, or delete it.</li>
+        <li>
+          Click <b>+</b> after the last column to add a course. No plan of study file? Type or paste your courses on the start screen, then
+          use <b>✨ Suggest</b>.
+        </li>
+        <li>Courses with a year or semester are grouped under that heading.</li>
+      </ul>
+      <h3>The six tiles</h3>
       <p>
-        No plan of study file? Choose <b>Type or paste your courses instead</b>, then use <b>Suggest matching with AI</b> above your course
-        list, or place components yourself.
+        Each tile shows one standard: the ring fills as more of its components are addressed, <b>M x/y</b> counts components that reach
+        Mastered, and <b>!</b> counts components to check. Click a tile to jump to that standard. <b>Collapse all</b> shows one summary row
+        per standard.
       </p>
 
       <h2>What I, R and M mean</h2>
@@ -58,15 +69,11 @@ export default function Help() {
           <b>M: Mastered</b>. Candidates demonstrate it independently, often in field experiences, student teaching or a key assessment.
         </li>
       </ul>
-      <p>
-        When you place a component by hand, the level is suggested automatically: <b>I</b> if no earlier course has it yet, otherwise{" "}
-        <b>R</b>. Change it with one click.
-      </p>
 
       <h2>The standards</h2>
       <p>
-        The six standards and their 25 components appear in the panel on the right, grouped by standard. Click ▾ on a component to read its
-        full wording. Source: SHAPE America (2017), <i>National Standards for Initial Physical Education Teacher Education</i>. © SHAPE America.
+        The six standards and their 25 components are the rows of the grid, grouped by standard. Hover over a component to read its full
+        wording. Source: SHAPE America (2017), <i>National Standards for Initial Physical Education Teacher Education</i>. © SHAPE America.
       </p>
 
       <h2>Saving your work</h2>
@@ -103,11 +110,10 @@ export default function Help() {
           Excel, save as CSV or PDF, or paste the courses.
         </li>
         <li>
-          <b>Suggest matching:</b> for courses you typed or pasted, suggests components and levels for courses that have none yet. Undo is
-          available right after.
+          <b>✨ Suggest:</b> for courses you typed or pasted, adds dotted suggestions for courses that have none yet.
         </li>
         <li>
-          <b>Analyze my map</b> (Coverage tab): a short review of standards coverage, progression, course balance and gaps, with suggestions.
+          <b>✨ AI review:</b> a short review of standards coverage, progression, course balance and gaps, with suggestions.
         </li>
         <li>
           All AI features need Google sign-in and have a daily limit per person. The matching is based mainly on course titles, so treat it as

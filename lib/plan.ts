@@ -32,11 +32,12 @@ export type Action =
   | { type: "setProgram"; university?: string; name?: string }
   | {
       type: "addCourses";
-      courses: { number: string; name: string; components?: { id: string; level: Level }[] }[];
+      courses: { id?: string; number: string; name: string; term?: string; components?: { id: string; level: Level }[] }[];
       source?: "manual" | "paste" | "ai";
     }
   | { type: "addPlacements"; placements: Placement[] }
-  | { type: "updateCourse"; id: string; number: string; name: string }
+  | { type: "updateCourse"; id: string; number: string; name: string; term?: string }
+  | { type: "setCells"; cells: { courseId: string; topicId: string; level: Level | null }[] }
   | { type: "deleteCourse"; id: string }
   | { type: "moveCourse"; id: string; delta: -1 | 1 }
   | { type: "placeTopic"; courseId: string; topicId: string }
@@ -53,7 +54,7 @@ function reduce(plan: Plan, a: Action): Plan {
 
     case "addCourses": {
       const rows = a.courses.filter((c) => c.number.trim() || c.name.trim());
-      const added: Course[] = rows.map((c) => ({ id: newCourseId(), number: c.number.trim(), name: c.name.trim() }));
+      const added: Course[] = rows.map((c) => ({ id: c.id ?? newCourseId(), number: c.number.trim(), name: c.name.trim(), ...(c.term?.trim() ? { term: c.term.trim() } : {}) }));
       const placements: Placement[] = rows.flatMap((c, i) =>
         (c.components ?? []).filter((x, j, all) => all.findIndex((y) => y.id === x.id) === j).map((x) => ({ courseId: added[i].id, topicId: x.id, level: x.level }))
       );
@@ -73,8 +74,28 @@ function reduce(plan: Plan, a: Action): Plan {
     case "updateCourse":
       return {
         ...plan,
-        courses: plan.courses.map((c) => (c.id === a.id ? { ...c, number: a.number.trim(), name: a.name.trim() } : c)),
+        courses: plan.courses.map((c) => {
+          if (c.id !== a.id) return c;
+          const term = a.term === undefined ? c.term : a.term.trim();
+          const next: Course = { id: c.id, number: a.number.trim(), name: a.name.trim() };
+          return term ? { ...next, term } : next;
+        }),
       };
+
+    case "setCells": {
+      let placements = plan.placements;
+      for (const cell of a.cells) {
+        const i = placements.findIndex((p) => p.courseId === cell.courseId && p.topicId === cell.topicId);
+        if (cell.level === null) {
+          if (i >= 0) placements = placements.filter((_, j) => j !== i);
+        } else if (i >= 0) {
+          if (placements[i].level !== cell.level) placements = placements.map((p, j) => (j === i ? { ...p, level: cell.level as Level } : p));
+        } else if (plan.courses.some((c) => c.id === cell.courseId)) {
+          placements = [...placements, { courseId: cell.courseId, topicId: cell.topicId, level: cell.level }];
+        }
+      }
+      return placements === plan.placements ? plan : { ...plan, placements };
+    }
 
     case "deleteCourse":
       return {
@@ -178,7 +199,7 @@ export function normalizePlan(input: unknown): Plan {
 
   const courses: Course[] = arr<Record<string, unknown>>(o.courses)
     .filter((c) => c && typeof c.id === "string")
-    .map((c) => ({ id: c.id as string, number: str(c.number), name: str(c.name) }));
+    .map((c) => ({ id: c.id as string, number: str(c.number), name: str(c.name), ...(str(c.term) ? { term: str(c.term) } : {}) }));
   const courseIds = new Set(courses.map((c) => c.id));
   const known = getLibrary().componentById; // placements for components that no longer exist are dropped
 

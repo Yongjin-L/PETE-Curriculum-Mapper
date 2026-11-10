@@ -1,30 +1,21 @@
 "use client";
 
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Dispatch } from "react";
-import { getLibrary } from "@/lib/dataset";
-import { emptyPlan, loadLocalPlan, normalizePlan, planReducer, saveLocalPlan, type Action } from "@/lib/plan";
+import { emptyPlan, loadLocalPlan, newCourseId, normalizePlan, parseCourseLines, planReducer, saveLocalPlan, type Action } from "@/lib/plan";
 import { track, trackInstitution } from "@/lib/track";
-import { CourseList } from "./CourseList";
+import { AnalysisPanel, DropPlan } from "./AiPanels";
+import { MapGrid, pendingKey, StandardTiles, type Pending } from "./MapGrid";
+import { Modal } from "./Modal";
+import type { ParsedPlan } from "./useAi";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
 import { ExportDialog } from "./ExportDialog";
 import { useAi } from "./useAi";
 import { useDrive } from "./useDrive";
-import { Coverage } from "./Coverage";
-import { ComponentPanel } from "./ComponentPanel";
 import { Logo } from "./Logo";
 
-type Tab = "map" | "coverage";
+import type { Level } from "@/lib/types";
+
+const PENDING_KEY = "petemap:pending:v1";
 
 export function Mapper() {
   const [plan, rawDispatch] = useReducer(planReducer, undefined, emptyPlan);
@@ -38,26 +29,45 @@ export function Mapper() {
       const n = a.courses.filter((c) => c.number.trim() || c.name.trim()).length;
       if (n && p.courses.length === 0) track("map_started");
       if (n) track(a.source === "ai" ? "courses_added_ai" : a.source === "paste" ? "courses_added_paste" : "courses_added_manual", n);
-    } else if (a.type === "placeTopic") {
-      if (!p.placements.some((x) => x.courseId === a.courseId && x.topicId === a.topicId)) track("topic_placed");
+    } else if (a.type === "setCells") {
+      const added = a.cells.filter((c) => c.level && !p.placements.some((x) => x.courseId === c.courseId && x.topicId === c.topicId)).length;
+      if (added) track("topic_placed", added);
     }
     rawDispatch(a);
   }, []);
   const [loaded, setLoaded] = useState(false);
   const [saveOk, setSaveOk] = useState(true);
-  const [tab, setTab] = useState<Tab>("map");
-  const [dragName, setDragName] = useState<string | null>(null);
+  const [pending, setPendingState] = useState<Pending>(new Map());
+  const [problemsOnly, setProblemsOnly] = useState(false);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [modal, setModal] = useState<"upload" | "review" | "typed" | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const lib = getLibrary();
+  // AI suggestions waiting for review (dotted cells). Kept in this browser until accepted or discarded.
+  const setPending = useCallback((p: Pending) => {
+    setPendingState(p);
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify([...p]));
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   // Load the saved plan once, then autosave on every change.
   useEffect(() => {
     const saved = loadLocalPlan();
     if (saved) rawDispatch({ type: "replacePlan", plan: saved });
+    try {
+      const raw = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]") as [string, Level][];
+      const ids = new Set((saved?.courses ?? []).map((c) => c.id));
+      setPendingState(new Map(raw.filter(([k]) => ids.has(k.split("|")[1]))));
+    } catch {
+      /* ignore */
+    }
     setLoaded(true);
   }, []);
   useEffect(() => {
@@ -78,27 +88,47 @@ export function Mapper() {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
-    useSensor(KeyboardSensor)
+  // ---- AI: plan-of-study upload -> new courses + dotted suggestions
+  const onParsed = (r: ParsedPlan) => {
+    const rows = r.courses.map((c) => ({ ...c, id: newCourseId() }));
+    dispatch({ type: "addCourses", source: "ai", courses: rows.map(({ id, number, name, term }) => ({ id, number, name, term })) });
+    if (!plan.program.university || !plan.program.name)
+      dispatch({ type: "setProgram", university: plan.program.university || r.university || undefined, name: plan.program.name || r.program_name || undefined });
+    const next = new Map(pending);
+    for (const c of rows) for (const s of c.components) next.set(pendingKey(s.id, c.id), s.level);
+    setPending(next);
+    setModal(null);
+    setToast(`${rows.length} courses added. Dotted cells are AI suggestions: click one to accept it, or use Accept all.`);
+  };
+
+  const acceptAll = () => {
+    const cells = [...pending].map(([k, level]) => {
+      const [topicId, courseId] = k.split("|");
+      return { courseId, topicId, level };
+    });
+    dispatch({ type: "setCells", cells: cells.filter((c) => !plan.placements.some((p) => p.courseId === c.courseId && p.topicId === c.topicId)) });
+    track("ai_matching_applied", cells.length);
+    setPending(new Map());
+  };
+
+  const emptyCourses = plan.courses.filter(
+    (c) => !plan.placements.some((p) => p.courseId === c.id) && ![...pending.keys()].some((k) => k.endsWith("|" + c.id))
   );
-
-  const onDragStart = (e: DragStartEvent) => setDragName((e.active.data.current?.name as string) ?? null);
-
-  const onDragEnd = (e: DragEndEvent) => {
-    setDragName(null);
-    const a = e.active.data.current;
-    const toCourseId = e.over?.data.current?.courseId as string | undefined;
-    if (!a || !toCourseId) return;
-    const course = plan.courses.find((c) => c.id === toCourseId);
-    const already = plan.placements.some((p) => p.courseId === toCourseId && p.topicId === a.topicId);
-    if (a.kind === "topic") {
-      if (already) setToast(`"${a.name}" is already in ${course?.number || "that course"}.`);
-      else dispatch({ type: "placeTopic", courseId: toCourseId, topicId: a.topicId });
-    } else if (a.kind === "placement" && a.courseId !== toCourseId) {
-      if (already) setToast(`"${a.name}" is already in ${course?.number || "that course"}.`);
-      else dispatch({ type: "movePlacement", fromCourseId: a.courseId, toCourseId, topicId: a.topicId });
+  const suggest = async () => {
+    setSuggesting(true);
+    try {
+      const r = await ai.suggest(plan, plan.courses.map((c) => ({ number: c.number, name: c.name })));
+      const targets = new Set(emptyCourses.map((c) => c.id));
+      const next = new Map(pending);
+      plan.courses.forEach((c, i) => {
+        if (targets.has(c.id)) for (const s of r.suggestions[i] ?? []) next.set(pendingKey(s.id, c.id), s.level);
+      });
+      setPending(next);
+      setToast(`${next.size - pending.size} suggestions added as dotted cells.`);
+    } catch (e) {
+      setToast(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSuggesting(false);
     }
   };
 
@@ -108,6 +138,7 @@ export function Mapper() {
       if (plan.courses.length > 0 && !confirm(drive.link ? "Open the imported file as a new map? Your current map stays in Google Drive." : "Replace your current map with the imported file?")) return;
       drive.detach();
       dispatch({ type: "replacePlan", plan: next });
+      setPending(new Map());
       track("json_imported");
       setToast(`Imported ${next.courses.length} course(s) and ${next.placements.length} placement(s).`);
     } catch (err) {
@@ -122,7 +153,7 @@ export function Mapper() {
     if (confirm(msg)) {
       drive.detach();
       dispatch({ type: "replacePlan", plan: emptyPlan() });
-      setTab("map");
+      setPending(new Map());
     }
   };
 
@@ -181,36 +212,97 @@ export function Mapper() {
       </header>
 
       <div className="program-bar">
-        <label>
-          <span className="small muted">University</span>
-          <input value={plan.program.university} onChange={(e) => dispatch({ type: "setProgram", university: e.target.value })} placeholder="e.g. Adelphi University" />
-        </label>
-        <label>
-          <span className="small muted">Program</span>
-          <input value={plan.program.name} onChange={(e) => dispatch({ type: "setProgram", name: e.target.value })} placeholder="e.g. B.S. Physical Education (Teacher Certification)" />
-        </label>
-        <nav className="tabs" role="tablist">
-          <button role="tab" aria-selected={tab === "map"} className={tab === "map" ? "on" : ""} onClick={() => setTab("map")}>
-            Map
-          </button>
-          <button role="tab" aria-selected={tab === "coverage"} className={tab === "coverage" ? "on" : ""} onClick={() => setTab("coverage")}>
-            Coverage
-          </button>
-        </nav>
+        <input value={plan.program.university} onChange={(e) => dispatch({ type: "setProgram", university: e.target.value })} placeholder="University" aria-label="University" />
+        <input value={plan.program.name} onChange={(e) => dispatch({ type: "setProgram", name: e.target.value })} placeholder="Program" aria-label="Program" />
       </div>
 
-      {tab === "map" ? (
-        <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragName(null)}>
-          <main className="workspace">
-            <CourseList plan={plan} lib={lib} dispatch={dispatch} ai={ai} />
-            <ComponentPanel plan={plan} lib={lib} dispatch={dispatch} />
-          </main>
-          <DragOverlay dropAnimation={null}>{dragName && <div className="drag-ghost">{dragName}</div>}</DragOverlay>
-        </DndContext>
-      ) : (
-        <main className="workspace single">
-          <Coverage plan={plan} lib={lib} ai={ai} dispatch={dispatch} />
+      {plan.courses.length === 0 ? (
+        <main className="start">
+          <DropPlan ai={ai} onParsed={onParsed} />
+          {(ai.enabled !== null || ai.needsGoogle) && <TypeCourses dispatch={dispatch} open={ai.enabled === false || ai.needsGoogle} />}
         </main>
+      ) : (
+        <main className="mapview">
+          <StandardTiles
+            plan={plan}
+            onPick={(id) => {
+              const next = new Set(collapsed);
+              next.delete(id);
+              setCollapsed(next);
+              setProblemsOnly(false);
+              setTimeout(() => document.getElementById(`std-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+            }}
+          />
+          <div className="toolbar">
+            <span className="legend" aria-label="Levels">
+              <span className="lg-chip level-I" title="Introduced">I</span>
+              <span className="lg-chip level-R" title="Reinforced">R</span>
+              <span className="lg-chip level-M" title="Mastered">M</span>
+              <span className="small muted hint">Click a cell to cycle · drag to fill</span>
+            </span>
+            <span className="tools">
+              <button className={"chip-btn" + (problemsOnly ? " on" : "")} onClick={() => setProblemsOnly(!problemsOnly)} aria-pressed={problemsOnly}>
+                ! Problems only
+              </button>
+              <button
+                className="chip-btn"
+                onClick={() => setCollapsed(collapsed.size ? new Set() : new Set(["S1", "S2", "S3", "S4", "S5", "S6"]))}
+              >
+                {collapsed.size ? "Expand all" : "Collapse all"}
+              </button>
+              {emptyCourses.length > 0 && ai.enabled && !ai.needsGoogle && (
+                <button className="chip-btn ai" onClick={ai.signedIn ? suggest : ai.signIn} disabled={suggesting}>
+                  {suggesting ? "Suggesting…" : `✨ Suggest for ${emptyCourses.length} course${emptyCourses.length === 1 ? "" : "s"}`}
+                </button>
+              )}
+              <button className="chip-btn ai" onClick={() => setModal("review")}>
+                ✨ AI review
+              </button>
+              <button className="chip-btn" onClick={() => setModal("upload")}>
+                ⬆ Upload plan
+              </button>
+            </span>
+          </div>
+          {pending.size > 0 && (
+            <div className="pending-bar">
+              <span>
+                <b>{pending.size}</b> AI suggestions (dotted). Click one to accept it.
+              </span>
+              <span className="row">
+                <button className="btn btn-primary btn-sm" onClick={acceptAll}>
+                  Accept all
+                </button>
+                <button className="btn btn-sm" onClick={() => setPending(new Map())}>
+                  Discard
+                </button>
+              </span>
+            </div>
+          )}
+          <MapGrid
+            plan={plan}
+            dispatch={dispatch}
+            pending={pending}
+            setPending={setPending}
+            problemsOnly={problemsOnly}
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+          />
+          <p className="status-legend small muted">
+            <span className="status st-ok">✓</span> builds to M <span className="status st-noM">!</span> never M{" "}
+            <span className="status st-order">↯</span> order <span className="status st-none">○</span> not addressed
+          </p>
+        </main>
+      )}
+
+      {modal === "upload" && (
+        <Modal title="Add courses from a plan of study" onClose={() => setModal(null)}>
+          <DropPlan ai={ai} onParsed={onParsed} compact />
+        </Modal>
+      )}
+      {modal === "review" && (
+        <Modal title="AI review" onClose={() => setModal(null)} wide>
+          <AnalysisPanel ai={ai} plan={plan} dispatch={dispatch} />
+        </Modal>
       )}
 
       <footer className="footer small muted">
@@ -231,6 +323,37 @@ export function Mapper() {
           {toast}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Fallback when there is no plan-of-study file: paste or type courses (one per line). */
+function TypeCourses({ dispatch, open }: { dispatch: Dispatch<Action>; open: boolean }) {
+  const [show, setShow] = useState(open);
+  const [text, setText] = useState("");
+  const rows = parseCourseLines(text);
+  if (!show && !open)
+    return (
+      <button className="linklike small" onClick={() => setShow(true)}>
+        No file? Type or paste your courses
+      </button>
+    );
+  return (
+    <div className="type-courses">
+      <textarea
+        rows={6}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={"One course per line\nPED 101 Foundations of Physical Education\nPED 210 Motor Development"}
+        aria-label="Courses, one per line"
+      />
+      <button
+        className="btn btn-primary"
+        disabled={!rows.length}
+        onClick={() => dispatch({ type: "addCourses", source: "paste", courses: rows })}
+      >
+        Add {rows.length || ""} course{rows.length === 1 ? "" : "s"}
+      </button>
     </div>
   );
 }
