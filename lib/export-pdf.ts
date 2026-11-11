@@ -87,6 +87,15 @@ export function renderPdf(r: Report): Blob {
   for (const c of r.courses) {
     ensure(90); // keep the course heading with the start of its table
     heading(c.heading, 12);
+    if (c.term) para(c.term, 8.5, MUTED);
+    if (r.sections.notes && c.note) {
+      doc.setFont("helvetica", "bold").setFontSize(9).setTextColor(...PRIMARY);
+      ensure(14);
+      doc.text("Note", MARGIN, y);
+      y += 12;
+      para(c.note, 9.5);
+      y += 2;
+    }
     if (c.items.length === 0) {
       para("No components mapped yet.", 9, MUTED);
       y += 4;

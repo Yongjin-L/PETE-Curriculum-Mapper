@@ -38,6 +38,7 @@ export interface Course {
   number: string;
   name: string;
   term?: string; // e.g. "Year 1 Fall" (from the plan of study); used to group columns
+  note?: string; // faculty note: topics, assignments, etc. Shown in exports.
 }
 
 export interface Placement {

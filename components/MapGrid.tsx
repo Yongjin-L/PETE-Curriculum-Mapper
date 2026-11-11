@@ -186,8 +186,19 @@ export function MapGrid({
             </th>
             {plan.courses.map((c, i) => (
               <th key={c.id} className="course-h">
-                <button className="course-btn" onClick={() => setMenu(menu === c.id ? null : c.id)} title={[c.number, c.name, c.term].filter(Boolean).join(" · ")}>
-                  <span className="cnum">{c.number || `#${i + 1}`}</span>
+                <button
+                  className="course-btn"
+                  onClick={() => setMenu(menu === c.id ? null : c.id)}
+                  title={[[c.number, c.name, c.term].filter(Boolean).join(" · "), c.note ? `Note: ${c.note}` : ""].filter(Boolean).join("\n")}
+                >
+                  <span className="cnum">
+                    {c.number || `#${i + 1}`}
+                    {c.note && (
+                      <span className="note-mark" aria-label="Has a note">
+                        📝
+                      </span>
+                    )}
+                  </span>
                   <span className="cname">{c.name}</span>
                 </button>
                 {menu === c.id && <CourseMenu course={c} index={i} total={plan.courses.length} dispatch={dispatch} onClose={() => setMenu(null)} />}
@@ -384,6 +395,7 @@ function CourseMenu({
   const [num, setNum] = useState(course?.number ?? "");
   const [name, setName] = useState(course?.name ?? "");
   const [term, setTerm] = useState(course?.term ?? "");
+  const [note, setNote] = useState(course?.note ?? "");
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     const close = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && onClose();
@@ -403,14 +415,29 @@ function CourseMenu({
       onSubmit={(e) => {
         e.preventDefault();
         if (!num.trim() && !name.trim()) return;
-        if (course) dispatch({ type: "updateCourse", id: course.id, number: num, name, term });
-        else dispatch({ type: "addCourses", source: "manual", courses: [{ number: num, name, term }] });
+        if (course) dispatch({ type: "updateCourse", id: course.id, number: num, name, term, note });
+        else dispatch({ type: "addCourses", source: "manual", courses: [{ number: num, name, term, note }] });
         onClose();
       }}
     >
       <input value={num} onChange={(e) => setNum(e.target.value)} placeholder="Course no." aria-label="Course number" autoFocus />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Course name" aria-label="Course name" />
       <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Year / semester (optional)" aria-label="Term" />
+      <label className="note-field">
+        <span className="small muted">Note: topics covered, key assignments… (included in exports)</span>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          rows={6}
+          maxLength={4000}
+          placeholder={"e.g. Lesson planning, task progressions,\nmicroteaching ×3, unit plan"}
+          aria-label="Course note"
+          onKeyDown={(e) => {
+            // Ctrl/Cmd+Enter saves; plain Enter adds a new line
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) (e.currentTarget.form as HTMLFormElement)?.requestSubmit();
+          }}
+        />
+      </label>
       <div className="row between">
         {course ? (
           <span className="row">

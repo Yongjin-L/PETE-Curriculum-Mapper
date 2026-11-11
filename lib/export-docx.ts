@@ -106,6 +106,19 @@ export async function renderDocx(r: Report): Promise<Blob> {
   const detail = r.sections.wording;
   for (const c of r.courses) {
     main.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 240 }, children: [new TextRun(c.heading)] }));
+    if (c.term) main.push(p(c.term, { size: 17, color: MUTED, after: 40 }));
+    if (r.sections.notes && c.note)
+      main.push(
+        new Paragraph({
+          spacing: { after: 100 },
+          shading: { type: ShadingType.CLEAR, color: "auto", fill: "F3F6FA" },
+          border: { left: { style: BorderStyle.SINGLE, size: 12, color: PRIMARY, space: 6 } },
+          children: [
+            new TextRun({ text: "Note  ", bold: true, color: PRIMARY, size: 19 }),
+            ...c.note.split(/\r?\n/).flatMap((line, i) => [...(i ? [new TextRun({ break: 1, text: "" })] : []), new TextRun({ text: line, size: 19 })]),
+          ],
+        })
+      );
     if (!c.items.length) {
       main.push(p("No components mapped yet.", { color: MUTED, size: 18 }));
       continue;

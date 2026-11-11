@@ -118,7 +118,7 @@ export function Mapper() {
   const suggest = async () => {
     setSuggesting(true);
     try {
-      const r = await ai.suggest(plan, plan.courses.map((c) => ({ number: c.number, name: c.name })));
+      const r = await ai.suggest(plan, plan.courses.map((c) => ({ number: c.number, name: c.name, note: c.note })));
       const targets = new Set(emptyCourses.map((c) => c.id));
       const next = new Map(pending);
       plan.courses.forEach((c, i) => {

@@ -67,7 +67,7 @@ const componentIds = () => getLibrary().components.map((c) => c.component_id);
 const MATCHING_GUIDANCE = `How to suggest the initial matching:
 - For each course, list the SHAPE components it substantially addresses, with a level:
   I (Introduced): candidates first learn about it; R (Reinforced): they practice and deepen it; M (Mastered): they demonstrate it independently, usually in methods practica, field experiences, student teaching or capstone courses.
-- Base the matching on the course titles, any course descriptions in the input, and how PETE programs are commonly designed. Use the course order: earlier exposure is usually I, later courses R, culminating experiences M.
+- Base the matching on the course titles, any course descriptions in the input, and how PETE programs are commonly designed. When a course has a faculty note (topics covered, assignments), rely on it more than on the title. Use the course order: earlier exposure is usually I, later courses R, culminating experiences M.
 - Be selective: typically 1-6 components per course. Courses unrelated to physical education teacher preparation (for example general education) can have an empty list.
 - It is fine to leave a component unmatched if no course plausibly covers it; faculty will review and edit every suggestion.`;
 
@@ -196,8 +196,10 @@ const suggestSchema = () => ({
   },
 });
 
-export async function suggestMatching(program: { university: string; name: string }, courses: { number: string; name: string }[]) {
-  const list = courses.map((c, i) => `${i + 1}. ${[c.number, c.name].filter(Boolean).join(" ").slice(0, 160)}`).join("\n");
+export async function suggestMatching(program: { university: string; name: string }, courses: { number: string; name: string; note?: string }[]) {
+  const list = courses
+    .map((c, i) => `${i + 1}. ${[c.number, c.name].filter(Boolean).join(" ").slice(0, 160)}${c.note ? `\n   Faculty note: ${c.note.replace(/\s+/g, " ").slice(0, 400)}` : ""}`)
+    .join("\n");
   const system = `You help physical education teacher education (PETE) faculty map their program to the SHAPE America 2017 National Standards for Initial Physical Education Teacher Education. You receive the program's courses in order and suggest an initial matching of each course to the standards' components.
 
 ${MATCHING_GUIDANCE}
@@ -240,6 +242,7 @@ export function describeMap(plan: Plan): string {
       .sort((a, b) => a.topicId.localeCompare(b.topicId, undefined, { numeric: true }))
       .map((p) => `${p.topicId} [${p.level}]`);
     lines.push(`${i + 1}. ${cut([c.number, c.name].filter(Boolean).join(" "), 120)}: ${items.length ? items.join(", ") : "(none)"}`);
+    if (c.note) lines.push(`   Faculty note: ${cut(c.note.replace(/\s+/g, " "), 400)}`);
   });
   const mapped = new Set(plan.placements.map((p) => p.topicId));
   const unmapped = lib.components.filter((c) => !mapped.has(c.component_id)).map((c) => c.component_id);

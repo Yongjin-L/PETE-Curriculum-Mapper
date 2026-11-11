@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       throw new HttpError(400, "The request could not be read.");
     }
     const courses = (Array.isArray(body.courses) ? body.courses : [])
-      .map((c) => ({ number: String(c?.number ?? "").slice(0, 40), name: String(c?.name ?? "").slice(0, 200) }))
+      .map((c) => ({ number: String(c?.number ?? "").slice(0, 40), name: String(c?.name ?? "").slice(0, 200), note: String((c as { note?: unknown })?.note ?? "").slice(0, 600) }))
       .filter((c) => c.number || c.name);
     if (!courses.length) throw new HttpError(400, "Add courses first.");
     if (courses.length > 100) throw new HttpError(413, "Too many courses (maximum 100).");

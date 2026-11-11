@@ -32,11 +32,11 @@ export type Action =
   | { type: "setProgram"; university?: string; name?: string }
   | {
       type: "addCourses";
-      courses: { id?: string; number: string; name: string; term?: string; components?: { id: string; level: Level }[] }[];
+      courses: { id?: string; number: string; name: string; term?: string; note?: string; components?: { id: string; level: Level }[] }[];
       source?: "manual" | "paste" | "ai";
     }
   | { type: "addPlacements"; placements: Placement[] }
-  | { type: "updateCourse"; id: string; number: string; name: string; term?: string }
+  | { type: "updateCourse"; id: string; number: string; name: string; term?: string; note?: string }
   | { type: "setCells"; cells: { courseId: string; topicId: string; level: Level | null }[] }
   | { type: "deleteCourse"; id: string }
   | { type: "moveCourse"; id: string; delta: -1 | 1 }
@@ -54,7 +54,7 @@ function reduce(plan: Plan, a: Action): Plan {
 
     case "addCourses": {
       const rows = a.courses.filter((c) => c.number.trim() || c.name.trim());
-      const added: Course[] = rows.map((c) => ({ id: c.id ?? newCourseId(), number: c.number.trim(), name: c.name.trim(), ...(c.term?.trim() ? { term: c.term.trim() } : {}) }));
+      const added: Course[] = rows.map((c) => ({ id: c.id ?? newCourseId(), number: c.number.trim(), name: c.name.trim(), ...(c.term?.trim() ? { term: c.term.trim() } : {}), ...(c.note?.trim() ? { note: c.note.trim().slice(0, 4000) } : {}) }));
       const placements: Placement[] = rows.flatMap((c, i) =>
         (c.components ?? []).filter((x, j, all) => all.findIndex((y) => y.id === x.id) === j).map((x) => ({ courseId: added[i].id, topicId: x.id, level: x.level }))
       );
@@ -77,8 +77,9 @@ function reduce(plan: Plan, a: Action): Plan {
         courses: plan.courses.map((c) => {
           if (c.id !== a.id) return c;
           const term = a.term === undefined ? c.term : a.term.trim();
+          const note = a.note === undefined ? c.note : a.note.trim().slice(0, 4000);
           const next: Course = { id: c.id, number: a.number.trim(), name: a.name.trim() };
-          return term ? { ...next, term } : next;
+          return { ...next, ...(term ? { term } : {}), ...(note ? { note } : {}) };
         }),
       };
 
@@ -199,7 +200,7 @@ export function normalizePlan(input: unknown): Plan {
 
   const courses: Course[] = arr<Record<string, unknown>>(o.courses)
     .filter((c) => c && typeof c.id === "string")
-    .map((c) => ({ id: c.id as string, number: str(c.number), name: str(c.name), ...(str(c.term) ? { term: str(c.term) } : {}) }));
+    .map((c) => ({ id: c.id as string, number: str(c.number), name: str(c.name), ...(str(c.term) ? { term: str(c.term) } : {}), ...(str(c.note) ? { note: str(c.note).slice(0, 4000) } : {}) }));
   const courseIds = new Set(courses.map((c) => c.id));
   const known = getLibrary().componentById; // placements for components that no longer exist are dropped
 

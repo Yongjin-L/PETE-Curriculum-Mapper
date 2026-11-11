@@ -739,3 +739,9 @@ th.term { white-space: normal; line-height: 1.1; max-width: none; }
 .brush-clear { color: var(--danger); font-weight: 700; }
 .brush-clear.on { border-color: var(--danger); background: var(--dup); }
 .comp-card .btn.danger { border-color: var(--danger); }
+
+/* course notes */
+.course-menu { width: 300px; }
+.note-field { display: flex; flex-direction: column; gap: 3px; }
+.note-field textarea { min-height: 120px; font-size: 0.88rem; line-height: 1.4; }
+.note-mark { font-size: 0.62rem; margin-left: 3px; vertical-align: 1px; }

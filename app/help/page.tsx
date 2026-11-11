@@ -50,6 +50,10 @@ export default function Help() {
       <ul>
         <li>Click a course name at the top of a column to rename it, set its year or semester, move it left or right, or delete it.</li>
         <li>
+          In the same menu, add a <b>Note</b>: the topics the course covers, key assignments, and so on. Courses with a note show 📝. Notes
+          appear under each course in PDF and Word exports, and the AI uses them for better suggestions and reviews.
+        </li>
+        <li>
           Click <b>+</b> after the last column to add a course. No plan of study file? Type or paste your courses on the start screen, then
           use <b>✨ AI suggestion</b>.
         </li>

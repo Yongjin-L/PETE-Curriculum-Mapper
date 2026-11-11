@@ -77,7 +77,7 @@ export function useAi(drive: DriveApi) {
   );
 
   const suggest = useCallback(
-    (plan: Plan, courses: { number: string; name: string }[]) =>
+    (plan: Plan, courses: { number: string; name: string; note?: string }[]) =>
       call<{ suggestions: Suggested[]; notes: string; usage: Usage }>(
         "/api/suggest-matching",
         JSON.stringify({ program: plan.program, courses }),

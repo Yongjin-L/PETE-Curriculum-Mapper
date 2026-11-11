@@ -16,6 +16,7 @@ const FORMATS: { id: Format; label: string; note: string }[] = [
 ];
 
 const SECTION_LABELS: { key: keyof Sections; label: string }[] = [
+  { key: "notes", label: "Course notes (topics, assignments)" },
   { key: "wording", label: "Full SHAPE wording for each component" },
   { key: "coverage", label: "Standards coverage table" },
   { key: "matrix", label: "Components × courses matrix (landscape page)" },

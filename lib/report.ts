@@ -6,6 +6,7 @@ import { LEVEL_NAMES, LEVELS, type Level, type Plan } from "./types";
 export type ExportLevel = "summary" | "standard" | "full";
 
 export interface Sections {
+  notes: boolean; // course notes (topics, assignments)
   wording: boolean; // full SHAPE wording under each component
   coverage: boolean; // standards coverage table
   matrix: boolean; // components x courses grid
@@ -13,9 +14,9 @@ export interface Sections {
 }
 
 export const PRESETS: Record<ExportLevel, Sections> = {
-  summary: { wording: false, coverage: false, matrix: false, analysis: false },
-  standard: { wording: true, coverage: true, matrix: false, analysis: false },
-  full: { wording: true, coverage: true, matrix: true, analysis: true },
+  summary: { notes: true, wording: false, coverage: false, matrix: false, analysis: false },
+  standard: { notes: true, wording: true, coverage: true, matrix: false, analysis: false },
+  full: { notes: true, wording: true, coverage: true, matrix: true, analysis: true },
 };
 
 export const LEVEL_INFO: Record<ExportLevel, { label: string; description: string }> = {
@@ -41,7 +42,7 @@ export interface Report {
   source: string;
   sections: Sections;
   stats: { courses: number; componentsMapped: number; componentsTotal: number; placements: number; byLevel: Record<Level, number> };
-  courses: { heading: string; number: string; name: string; items: ReportItem[] }[];
+  courses: { heading: string; number: string; name: string; term: string; note: string; items: ReportItem[] }[];
   matrix: {
     columns: string[];
     columnNames: string[];
@@ -67,7 +68,7 @@ export function buildReport(plan: Plan, sections: Sections, analysis: string | n
         const comp = lib.componentById.get(p.topicId);
         return { code: p.topicId, label: comp?.label ?? "Unknown component", text: comp?.text ?? "", level: p.level };
       });
-    return { heading: `${i + 1}. ${[c.number, c.name].filter(Boolean).join(" ")}`, number: c.number, name: c.name, items };
+    return { heading: `${i + 1}. ${[c.number, c.name].filter(Boolean).join(" ")}`, number: c.number, name: c.name, term: c.term ?? "", note: c.note ?? "", items };
   });
 
   const cell = new Map(plan.placements.map((p) => [p.topicId + "|" + p.courseId, p.level]));
