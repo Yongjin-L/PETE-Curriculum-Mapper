@@ -6,6 +6,7 @@ import { track, trackInstitution } from "@/lib/track";
 import { AnalysisPanel, DropPlan } from "./AiPanels";
 import { MapGrid, pendingKey, StandardTiles, type Brush, type Pending } from "./MapGrid";
 import { Modal } from "./Modal";
+import { NotesView } from "./NotesView";
 import type { ParsedPlan } from "./useAi";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
 import { ExportDialog } from "./ExportDialog";
@@ -40,6 +41,7 @@ export function Mapper() {
   const [pending, setPendingState] = useState<Pending>(new Map());
   const [problemsOnly, setProblemsOnly] = useState(false);
   const [brush, setBrush] = useState<Brush>("cycle");
+  const [view, setView] = useState<"map" | "notes">("map");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [modal, setModal] = useState<"upload" | "review" | "typed" | null>(null);
   const [suggesting, setSuggesting] = useState(false);
@@ -224,6 +226,19 @@ export function Mapper() {
         </main>
       ) : (
         <main className="mapview">
+          <nav className="view-tabs" role="tablist" aria-label="View">
+            <button role="tab" aria-selected={view === "map"} className={view === "map" ? "on" : ""} onClick={() => setView("map")}>
+              ▦ Map
+            </button>
+            <button role="tab" aria-selected={view === "notes"} className={view === "notes" ? "on" : ""} onClick={() => setView("notes")}>
+              📝 Notes
+              <span className="tab-count">{plan.courses.filter((c) => c.note).length}</span>
+            </button>
+          </nav>
+          {view === "notes" ? (
+            <NotesView plan={plan} dispatch={dispatch} />
+          ) : (
+            <>
           <StandardTiles
             plan={plan}
             onPick={(id) => {
@@ -324,6 +339,8 @@ export function Mapper() {
             <span className="status st-ok">✓</span> builds to M <span className="status st-noM">!</span> never M{" "}
             <span className="status st-order">↯</span> order <span className="status st-none">○</span> not addressed
           </p>
+            </>
+          )}
         </main>
       )}
 

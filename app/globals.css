@@ -745,3 +745,40 @@ th.term { white-space: normal; line-height: 1.1; max-width: none; }
 .note-field { display: flex; flex-direction: column; gap: 3px; }
 .note-field textarea { min-height: 120px; font-size: 0.88rem; line-height: 1.4; }
 .note-mark { font-size: 0.62rem; margin-left: 3px; vertical-align: 1px; }
+
+/* Map | Notes tabs and notes view */
+.view-tabs { display: inline-flex; align-self: flex-start; gap: 4px; background: var(--surface-2); padding: 3px; border-radius: 10px; }
+.view-tabs button { border: 0; background: transparent; padding: 6px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.view-tabs button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.tab-count { margin-left: 6px; font-size: 0.72rem; background: var(--primary-soft); color: var(--primary); border-radius: 999px; padding: 1px 7px; }
+.notes-view { display: flex; flex-direction: column; gap: 12px; }
+.notes-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.notes-bar input[type="search"] { flex: 1 1 320px; max-width: 520px; }
+.notes-term {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary);
+  border-bottom: 2px solid var(--primary-soft); padding-bottom: 4px; margin: 8px 0 0;
+}
+.notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.note-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px; transition: opacity 0.15s;
+}
+.note-card.empty { border-style: dashed; }
+.note-card.dim { opacity: 0.35; }
+.note-card header { display: flex; align-items: flex-start; gap: 8px; }
+.note-idx {
+  flex: 0 0 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 0.75rem;
+}
+.note-head { flex: 1; min-width: 0; line-height: 1.3; }
+.note-head b { color: var(--primary); }
+.note-levels { display: flex; gap: 4px; flex-wrap: wrap; }
+.note-body { margin: 0; white-space: pre-wrap; line-height: 1.5; font-size: 0.92rem; }
+.note-edit { display: flex; flex-direction: column; gap: 6px; }
+.note-edit textarea { width: 100%; font-size: 0.9rem; line-height: 1.4; }
+.note-card mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 1px; }
+@media (prefers-color-scheme: dark) { .note-card mark { background: #6b5310; } }
+.note-card .linklike { align-self: flex-start; }
+.notes-timeline { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; align-items: start; }
+.notes-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.notes-col .notes-term { margin-top: 0; }

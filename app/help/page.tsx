@@ -54,6 +54,10 @@ export default function Help() {
           appear under each course in PDF and Word exports, and the AI uses them for better suggestions and reviews.
         </li>
         <li>
+          The <b>📝 Notes</b> tab (next to <b>▦ Map</b>) shows every course&apos;s note at a glance, by year or semester. Search for a topic
+          to highlight it across all courses, and use ✎ to edit a note in place.
+        </li>
+        <li>
           Click <b>+</b> after the last column to add a course. No plan of study file? Type or paste your courses on the start screen, then
           use <b>✨ AI suggestion</b>.
         </li>
