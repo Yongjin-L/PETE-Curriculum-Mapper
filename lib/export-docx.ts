@@ -102,9 +102,12 @@ export async function renderDocx(r: Report): Promise<Blob> {
     p(`Standards: ${r.source}`, { size: 18, color: MUTED, after: 240 })
   );
 
-  main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Courses and SHAPE components")] }));
+  const showComponents = r.sections.components;
+  const courseList = showComponents ? r.courses : r.sections.notes ? r.courses.filter((c) => c.note) : [];
+  if (courseList.length)
+    main.push(new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(showComponents ? "Courses and SHAPE components" : "Course notes")] }));
   const detail = r.sections.wording;
-  for (const c of r.courses) {
+  for (const c of courseList) {
     main.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 240 }, children: [new TextRun(c.heading)] }));
     if (c.term) main.push(p(c.term, { size: 17, color: MUTED, after: 40 }));
     if (r.sections.notes && c.note)
@@ -119,6 +122,7 @@ export async function renderDocx(r: Report): Promise<Blob> {
           ],
         })
       );
+    if (!showComponents) continue;
     if (!c.items.length) {
       main.push(p("No components mapped yet.", { color: MUTED, size: 18 }));
       continue;

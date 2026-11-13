@@ -16,6 +16,7 @@ const FORMATS: { id: Format; label: string; note: string }[] = [
 ];
 
 const SECTION_LABELS: { key: keyof Sections; label: string }[] = [
+  { key: "components", label: "Each course's SHAPE components with I/R/M levels" },
   { key: "notes", label: "Course notes (topics, assignments)" },
   { key: "wording", label: "Full SHAPE wording for each component" },
   { key: "coverage", label: "Standards coverage table" },
@@ -125,12 +126,12 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
 
           <fieldset className="field">
             <legend>Include</legend>
-            <label className="check">
+            <label className="check muted">
               <input type="checkbox" checked disabled />
-              <span>Program details and each course&apos;s SHAPE components with I/R/M levels</span>
+              <span>Program details (always included)</span>
             </label>
             {SECTION_LABELS.map((s) => {
-              const unavailable = s.key === "analysis" && !plan.analysis;
+              const unavailable = (s.key === "analysis" && !plan.analysis) || (s.key === "wording" && !sections.components);
               return (
                 <label key={s.key} className={"check" + (unavailable ? " muted" : "")}>
                   <input
@@ -141,7 +142,7 @@ export function ExportDialog({ plan, drive, onClose }: { plan: Plan; drive: Driv
                   />
                   <span>
                     {s.label}
-                    {unavailable && " (run it on the Coverage tab first)"}
+                    {unavailable && (s.key === "analysis" ? " (run ✨ AI review first)" : " (needs the course components)")}
                   </span>
                 </label>
               );

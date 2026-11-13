@@ -82,9 +82,11 @@ export function renderPdf(r: Report): Blob {
   y += 6;
 
   // ---- Courses
-  heading("Courses and SHAPE components", 15);
+  const showComponents = r.sections.components;
+  const courseList = showComponents ? r.courses : r.sections.notes ? r.courses.filter((c) => c.note) : [];
+  if (courseList.length) heading(showComponents ? "Courses and SHAPE components" : "Course notes", 15);
   const detail = r.sections.wording;
-  for (const c of r.courses) {
+  for (const c of courseList) {
     ensure(90); // keep the course heading with the start of its table
     heading(c.heading, 12);
     if (c.term) para(c.term, 8.5, MUTED);
@@ -95,6 +97,10 @@ export function renderPdf(r: Report): Blob {
       y += 12;
       para(c.note, 9.5);
       y += 2;
+    }
+    if (!showComponents) {
+      y += 6;
+      continue;
     }
     if (c.items.length === 0) {
       para("No components mapped yet.", 9, MUTED);

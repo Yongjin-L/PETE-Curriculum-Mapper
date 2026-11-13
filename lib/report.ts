@@ -6,6 +6,7 @@ import { LEVEL_NAMES, LEVELS, type Level, type Plan } from "./types";
 export type ExportLevel = "summary" | "standard" | "full";
 
 export interface Sections {
+  components: boolean; // each course's SHAPE components with I/R/M levels
   notes: boolean; // course notes (topics, assignments)
   wording: boolean; // full SHAPE wording under each component
   coverage: boolean; // standards coverage table
@@ -14,9 +15,9 @@ export interface Sections {
 }
 
 export const PRESETS: Record<ExportLevel, Sections> = {
-  summary: { notes: true, wording: false, coverage: false, matrix: false, analysis: false },
-  standard: { notes: true, wording: true, coverage: true, matrix: false, analysis: false },
-  full: { notes: true, wording: true, coverage: true, matrix: true, analysis: true },
+  summary: { components: true, notes: true, wording: false, coverage: false, matrix: false, analysis: false },
+  standard: { components: true, notes: true, wording: true, coverage: true, matrix: false, analysis: false },
+  full: { components: true, notes: true, wording: true, coverage: true, matrix: true, analysis: true },
 };
 
 export const LEVEL_INFO: Record<ExportLevel, { label: string; description: string }> = {
