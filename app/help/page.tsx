@@ -105,6 +105,18 @@ export default function Help() {
         </li>
       </ul>
 
+      <h2>Sharing your map</h2>
+      <ul>
+        <li>
+          <b>🔗 Share → Copy link</b> gives a <b>view-only link</b>. Anyone who opens it sees the map and notes and can download a PDF or an
+          image, with no sign-in. The map is stored inside the link itself, not on a server. It&apos;s a snapshot, so share a new link after
+          you make changes. Recipients can click <b>Make a copy to edit</b> to start their own version.
+        </li>
+        <li>
+          <b>🔗 Share → Download PNG</b> (or <b>Copy image</b>) gives a picture of the whole grid for slides, emails and posters.
+        </li>
+      </ul>
+
       <h2>Working with colleagues</h2>
       <ol>
         <li>Open the account menu → <b>Share with colleagues…</b> → <b>Open in Google Drive</b>, and share the file with Editor access.</li>

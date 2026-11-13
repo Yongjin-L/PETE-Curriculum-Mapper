@@ -20,6 +20,7 @@ export function MapGrid({
   brush,
   collapsed,
   setCollapsed,
+  readOnly = false,
 }: {
   plan: Plan;
   dispatch: Dispatch<Action>;
@@ -29,6 +30,7 @@ export function MapGrid({
   brush: Brush;
   collapsed: Set<string>;
   setCollapsed: (s: Set<string>) => void;
+  readOnly?: boolean;
 }) {
   const lib = getLibrary();
   const row = levelGrid(plan);
@@ -115,6 +117,7 @@ export function MapGrid({
   };
 
   const start = (componentId: string, courseId: string, current: Level | "") => {
+    if (readOnly) return;
     const k = pendingKey(componentId, courseId);
     // A dotted AI suggestion is accepted by clicking it.
     const value =
@@ -128,6 +131,7 @@ export function MapGrid({
     apply(componentId, courseId, value);
   };
   const enter = (componentId: string, courseId: string) => {
+    if (readOnly) return;
     const p = paint.current;
     const k = pendingKey(componentId, courseId);
     if (!p || p.seen.has(k)) return;
@@ -146,7 +150,7 @@ export function MapGrid({
 
   return (
     <div
-      className="grid-wrap"
+      className={"grid-wrap" + (readOnly ? " readonly" : "")}
       onDragStart={(e) => e.preventDefault()}
       onScroll={() => detail && setDetail(null)}
       style={firstW ? ({ ["--first-w" as string]: `${Math.min(firstW, Math.round(window.innerWidth * 0.55))}px` } as React.CSSProperties) : undefined}
@@ -188,7 +192,7 @@ export function MapGrid({
               <th key={c.id} className="course-h">
                 <button
                   className="course-btn"
-                  onClick={() => setMenu(menu === c.id ? null : c.id)}
+                  onClick={() => !readOnly && setMenu(menu === c.id ? null : c.id)}
                   title={[[c.number, c.name, c.term].filter(Boolean).join(" · "), c.note ? `Note: ${c.note}` : ""].filter(Boolean).join("\n")}
                 >
                   <span className="cnum">
@@ -205,9 +209,11 @@ export function MapGrid({
               </th>
             ))}
             <th className="course-h add-col">
-              <button className="add-btn" onClick={() => setMenu(menu === "new" ? null : "new")} title="Add a course" aria-label="Add a course">
-                +
-              </button>
+              {!readOnly && (
+                <button className="add-btn" onClick={() => setMenu(menu === "new" ? null : "new")} title="Add a course" aria-label="Add a course">
+                  +
+                </button>
+              )}
               {menu === "new" && <CourseMenu dispatch={dispatch} onClose={() => setMenu(null)} />}
             </th>
           </tr>
@@ -314,7 +320,7 @@ export function MapGrid({
           })}
         </tbody>
       </table>
-      {detail && <ComponentCard id={detail.id} top={detail.top} left={detail.left} plan={plan} dispatch={dispatch} onClose={() => setDetail(null)} />}
+      {detail && <ComponentCard id={detail.id} top={detail.top} left={detail.left} plan={plan} dispatch={dispatch} readOnly={readOnly} onClose={() => setDetail(null)} />}
     </div>
   );
 }
@@ -323,7 +329,7 @@ const COLW_KEY = "petemap:colw:v1";
 const clampW = (w: number) => Math.round(Math.min(640, Math.max(140, w)));
 
 /** Floating card with the full SHAPE wording of a component and its levels across courses. */
-function ComponentCard({ id, top, left, plan, dispatch, onClose }: { id: string; top: number; left: number; plan: Plan; dispatch: Dispatch<Action>; onClose: () => void }) {
+function ComponentCard({ id, top, left, plan, dispatch, readOnly, onClose }: { id: string; top: number; left: number; plan: Plan; dispatch: Dispatch<Action>; readOnly?: boolean; onClose: () => void }) {
   const lib = getLibrary();
   const comp = lib.componentById.get(id);
   const std = comp && lib.standardById.get(comp.standard_id);
@@ -366,7 +372,7 @@ function ComponentCard({ id, top, left, plan, dispatch, onClose }: { id: string;
       </div>
       <div className="row between">
         <span className="small muted src">SHAPE America (2017), Initial PETE Standards.</span>
-        {levels.some(Boolean) && (
+        {levels.some(Boolean) && !readOnly && (
           <button
             className="btn btn-sm danger"
             onClick={() => dispatch({ type: "setCells", cells: plan.courses.map((c) => ({ courseId: c.id, topicId: id, level: null })) })}

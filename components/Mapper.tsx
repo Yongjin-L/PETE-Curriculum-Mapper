@@ -7,6 +7,7 @@ import { AnalysisPanel, DropPlan } from "./AiPanels";
 import { MapGrid, pendingKey, StandardTiles, type Brush, type Pending } from "./MapGrid";
 import { Modal } from "./Modal";
 import { NotesView } from "./NotesView";
+import { ShareModal } from "./ShareModal";
 import type { ParsedPlan } from "./useAi";
 import { AccountArea, ConflictDialog, MyMapsDialog, ShareDialog } from "./DriveUI";
 import { ExportDialog } from "./ExportDialog";
@@ -43,7 +44,7 @@ export function Mapper() {
   const [brush, setBrush] = useState<Brush>("cycle");
   const [view, setView] = useState<"map" | "notes">("map");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [modal, setModal] = useState<"upload" | "review" | "typed" | null>(null);
+  const [modal, setModal] = useState<"upload" | "review" | "typed" | "share" | null>(null);
   const [suggesting, setSuggesting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -194,6 +195,11 @@ export function Mapper() {
           <button className="btn" onClick={() => fileInput.current?.click()}>
             Open JSON
           </button>
+          {plan.courses.length > 0 && (
+            <button className="btn" onClick={() => setModal("share")}>
+              🔗 Share
+            </button>
+          )}
           <button className="btn btn-primary" onClick={() => setExportOpen(true)}>
             Export
           </button>
@@ -349,6 +355,7 @@ export function Mapper() {
           <DropPlan ai={ai} onParsed={onParsed} compact />
         </Modal>
       )}
+      {modal === "share" && <ShareModal plan={plan} onClose={() => setModal(null)} />}
       {modal === "review" && (
         <Modal title="AI review" onClose={() => setModal(null)} wide>
           <AnalysisPanel ai={ai} plan={plan} dispatch={dispatch} />

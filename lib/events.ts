@@ -18,6 +18,8 @@ export const EVENTS = [
   "ai_analysis",
   "ai_suggest",
   "ai_matching_applied",
+  "share_link_created",
+  "image_shared",
 ] as const;
 
 export type EventName = (typeof EVENTS)[number];
@@ -41,4 +43,6 @@ export const EVENT_LABELS: Record<EventName, string> = {
   ai_analysis: "AI map analyses",
   ai_suggest: "AI matching suggestions (typed courses)",
   ai_matching_applied: "AI component suggestions accepted",
+  share_link_created: "View-only links copied",
+  image_shared: "Map images downloaded or copied",
 };

@@ -5,7 +5,7 @@ import type { Action } from "@/lib/plan";
 import type { Course, Level, Plan } from "@/lib/types";
 
 /** All course notes at a glance, in program order (grouped by year/semester), with search and inline editing. */
-export function NotesView({ plan, dispatch }: { plan: Plan; dispatch: Dispatch<Action> }) {
+export function NotesView({ plan, dispatch, readOnly = false }: { plan: Plan; dispatch: Dispatch<Action>; readOnly?: boolean }) {
   const [q, setQ] = useState("");
   const [onlyWithNotes, setOnlyWithNotes] = useState(false);
   const needle = q.trim().toLowerCase();
@@ -40,7 +40,7 @@ export function NotesView({ plan, dispatch }: { plan: Plan; dispatch: Dispatch<A
         </label>
       </div>
 
-      {shown.length === 0 && <p className="muted center pad">No courses have notes yet. Turn off "Only courses with notes" and use ✎ to add one.</p>}
+      {shown.length === 0 && <p className="muted center pad">No courses have notes yet.</p>}
 
       {groups.some((g) => g.term) ? (
         // Year/semester columns side by side, like a timeline
@@ -49,7 +49,7 @@ export function NotesView({ plan, dispatch }: { plan: Plan; dispatch: Dispatch<A
             <div className="notes-col" key={gi}>
               <h3 className="notes-term">{g.term || "No term"}</h3>
               {g.items.map(({ c, i }) => (
-                <NoteCard key={c.id} course={c} index={i} plan={plan} dispatch={dispatch} needle={needle} dim={!!needle && !matches(c)} />
+                <NoteCard key={c.id} course={c} index={i} plan={plan} dispatch={dispatch} needle={needle} dim={!!needle && !matches(c)} readOnly={readOnly} />
               ))}
             </div>
           ))}
@@ -57,7 +57,7 @@ export function NotesView({ plan, dispatch }: { plan: Plan; dispatch: Dispatch<A
       ) : (
         <div className="notes-grid">
           {shown.map(({ c, i }) => (
-            <NoteCard key={c.id} course={c} index={i} plan={plan} dispatch={dispatch} needle={needle} dim={!!needle && !matches(c)} />
+            <NoteCard key={c.id} course={c} index={i} plan={plan} dispatch={dispatch} needle={needle} dim={!!needle && !matches(c)} readOnly={readOnly} />
           ))}
         </div>
       )}
@@ -72,7 +72,9 @@ function NoteCard({
   dispatch,
   needle,
   dim,
+  readOnly,
 }: {
+  readOnly?: boolean;
   course: Course;
   index: number;
   plan: Plan;
@@ -97,7 +99,7 @@ function NoteCard({
         <span className="note-head">
           <b>{highlight(course.number || `#${index + 1}`, needle)}</b> {highlight(course.name, needle)}
         </span>
-        {!editing && (
+        {!editing && !readOnly && (
           <button
             className="icon-btn"
             onClick={() => {
@@ -147,6 +149,8 @@ function NoteCard({
         </div>
       ) : course.note ? (
         <p className="note-body">{highlight(course.note, needle)}</p>
+      ) : readOnly ? (
+        <span className="small muted">No note</span>
       ) : (
         <button
           className="linklike small"
